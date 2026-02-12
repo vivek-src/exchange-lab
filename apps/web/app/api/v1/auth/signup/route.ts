@@ -3,7 +3,6 @@ import { NextResponse, NextRequest } from "next/server";
 import bcrypt from "bcrypt";
 import { sendEmail } from "@/lib/mailer";
 import { EmailType } from "@/lib/mailer";
-import Email from "next-auth/providers/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,13 +36,10 @@ export async function POST(req: NextRequest) {
     await sendEmail({ email, emailType: EmailType.VERIFY, userId: newUser.id });
 
     return NextResponse.json(
-      { msg: "User created successfully", id: newUser.id },
+      { msg: "User created successfully", success: true, id: newUser.id },
       { status: 201 },
     );
   } catch (error) {
-    return NextResponse.json(
-      { msg: "Internal Server Error", error },
-      { status: 500 },
-    );
+    return NextResponse.json({ msg: "Internal Server Error" }, { status: 500 });
   }
 }

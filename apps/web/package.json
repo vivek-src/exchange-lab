@@ -9,23 +9,30 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@exchange-lab/db": "*",
     "@hookform/resolvers": "^5.2.2",
     "@types/nodemailer": "^7.0.9",
+    "axios": "^1.13.5",
+    "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.563.0",
+    "mailtrap": "^4.4.0",
     "next": "16.1.6",
-    "nodemailer": "^8.0.1",
+    "next-auth": "^4.24.13",
+    "nodemailer": "^7.0.13",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.1",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.3.6",
-    "@exchange-lab/db": "*"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

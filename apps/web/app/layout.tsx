@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 };
 
 import Providers from "@/components/providers";
+import { Toaster } from "@/components/ui/sonner";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,6 +35,16 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           {children}
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              classNames: {
+                toast: "text-lg py-6 px-8 rounded-xl",
+                title: "text-lg font-semibold",
+                description: "text-base",
+              },
+            }}
+          />
           <Footer></Footer>
         </Providers>
       </body>

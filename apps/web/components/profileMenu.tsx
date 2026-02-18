@@ -59,7 +59,7 @@ const ProfileMenu = ({ name, email }: ProfileMenuProps) => {
           <DropdownMenuItem asChild>
             <Link href="/user/orders">Orders</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem asChild>
             <Link href="/docs">Docs</Link>
           </DropdownMenuItem>
           <DropdownMenuItem

@@ -11,6 +11,8 @@
   "dependencies": {
     "@exchange-lab/db": "*",
     "@hookform/resolvers": "^5.2.2",
+    "@mynaui/icons-react": "^0.4.2",
+    "@next-auth/prisma-adapter": "^1.0.7",
     "@types/nodemailer": "^7.0.9",
     "axios": "^1.13.5",
     "bcrypt": "^6.0.0",

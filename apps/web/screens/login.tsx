@@ -109,9 +109,9 @@ const Login = () => {
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Create a password"
+                        placeholder="Enter your password"
                         type="password"
-                        autoComplete="new-password"
+                        autoComplete="password"
                         {...field}
                       />
                     </FormControl>

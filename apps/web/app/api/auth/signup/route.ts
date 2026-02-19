@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       });
     } catch (error) {
       //Continue without throwing error
-      //Mailer util is not live yet
+      console.log("Error sending verification mail", error);
     }
 
     return NextResponse.json(

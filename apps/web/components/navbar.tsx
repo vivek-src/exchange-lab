@@ -26,10 +26,16 @@ export default function Navbar() {
             />
           </Link>
 
-          <div className="hidden md:flex gap-4 text-sm text-muted-foreground">
-            <button>Trade</button>
-            <button>Portfolio</button>
-            <button>Wallet</button>
+          <div className="hidden md:flex gap-4 text-sm text-foreground">
+            <Link href="/trade" className="pointer-events-none opacity-60">
+              Trade
+            </Link>
+            <Link
+              href="/user/portfolio"
+              className="pointer-events-none opacity-60">
+              Portfolio
+            </Link>
+            <Link href="/user/wallet">Wallet</Link>
           </div>
         </div>
 

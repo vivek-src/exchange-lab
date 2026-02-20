@@ -36,7 +36,7 @@ export function ResetPassDialog({
     try {
       setLoading(true);
 
-      await axios.post("/api/auth/resetpass", { email });
+      await axios.post("/api/auth/sendPassReset", { email });
 
       toast.success("Password reset link sent to email");
       onOpenChange(false); // close dialog
@@ -74,17 +74,31 @@ export function ResetPassDialog({
 }
 
 interface resetPassTriggerProps {
+  name?: string;
   email?: string;
+  variant?: "button" | "link";
 }
 
-export function ResetPassTrigger({ email }: resetPassTriggerProps) {
+export function ResetPassTrigger({
+  email,
+  name,
+  variant = "button",
+}: ResetPassTriggerProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-        Send Reset Link
-      </Button>
+      {variant === "button" ? (
+        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+          {name}
+        </Button>
+      ) : (
+        <span
+          onClick={() => setOpen(true)}
+          className="text-sm text-primary hover:underline cursor-pointer">
+          {name}
+        </span>
+      )}
 
       <ResetPassDialog
         open={open}

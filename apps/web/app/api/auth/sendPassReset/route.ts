@@ -18,26 +18,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    if (user.isVerified) {
-      return NextResponse.json(
-        { message: "User already verified" },
-        { status: 400 },
-      );
-    }
-
-    // Send verification email again
+    // Send Password Resend Mail Here
     try {
       await sendEmail({
         email,
-        emailType: EmailType.VERIFY,
+        emailType: EmailType.RESET,
         userId: user.id,
       });
     } catch (error) {
-      console.log("Error sending verification mail", error);
+      console.log("Error sending password reset email", error);
     }
 
     return NextResponse.json(
-      { message: "Verification email sent" },
+      { message: "Password reset link sent" },
       { status: 200 },
     );
   } catch (error) {

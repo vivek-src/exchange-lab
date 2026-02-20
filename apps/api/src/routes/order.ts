@@ -21,22 +21,33 @@ router.post("/", (req, res) => {
 
   const remainingQty = fillOrder(order, userID);
   const filledQty = order.quantity - remainingQty;
+
+  //Liquidity available and order gets filled
   if (remainingQty === 0) {
     return res.status(200).json({
       status: "filled",
       filledQty,
     });
   }
-  //Order not completely filled
-  const { side, price, quantity } = order;
-  const newOrder = addToBook(order, userID);
-
-  return res.status(201).json({
-    status: "open",
-    filledQty,
-    remainingQty,
-    order: newOrder,
-  });
+  //If its a market order and no liquidity available
+  else if (remainingQty !== 0 && order.executionType == "ioc") {
+    return res.status(200).json({
+      status: "Partillay Filled",
+      filledQty,
+      remainingQty,
+    });
+  }
+  // Limit order not completely filled
+  else {
+    const { side, price, quantity } = order;
+    const newOrder = addToBook({ side, price, quantity }, userID);
+    return res.status(201).json({
+      status: "open",
+      filledQty,
+      remainingQty,
+      order: newOrder,
+    });
+  }
 });
 
 router.get("/status", (req, res) => {

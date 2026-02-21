@@ -1,0 +1,4 @@
+Frontend : 
+- Build Charting and Basic trading interface
+- display orderbook and trade book on the Frontend
+- Execute the matching engine

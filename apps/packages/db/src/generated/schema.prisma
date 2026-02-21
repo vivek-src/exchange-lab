@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  // Credentials login support
+  password   String?
+  isVerified Boolean @default(false)
+
+  // NextAuth relations
+  accounts Account[]
+
+  //business logic
+  wallet Wallet?
+  token  Token?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Wallet {
+  userId       String        @id
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance      Decimal       @default(10000)
+  transactions Transaction[]
+  updatedAt    DateTime?     @updatedAt
+}
+
+model Token {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  verifyToken    String?
+  verifyTokenExp DateTime?
+}
+
+model Transaction {
+  id           String              @id @default(cuid())
+  walletId     String
+  wallet       Wallet              @relation(fields: [walletId], references: [userId], onDelete: Cascade)
+  type         TransactionType
+  category     TransactionCategory
+  description  String
+  amount       Decimal
+  balanceAfter Decimal
+  ticker       String?
+  quantity     Int?
+  price        Decimal?
+  fromWalletId String?
+  toWalletId   String?
+  createdAt    DateTime            @default(now())
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum TransactionCategory {
+  SIGNUP_BONUS
+  ORDER_BUY
+  ORDER_SELL
+}

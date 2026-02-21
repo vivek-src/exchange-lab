@@ -17,9 +17,8 @@ export default function VerifyPage() {
   const [message, setMessage] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const token = searchParams.get("token");
   useEffect(() => {
-    const token = searchParams.get("token");
-
     if (!token) {
       setStatus("error");
       setMessage("Invalid verification link.");

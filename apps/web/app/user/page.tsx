@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { ResendVerificationTrigger } from "@/components/resendVerifyEmail";
+import { ResetPassTrigger } from "@/components/resetPass";
 import {
   User,
   Mail,
-  Calendar,
   Wallet,
   Settings,
   Shield,
@@ -150,11 +150,11 @@ export default async function UserProfilePage() {
                 <p className="text-sm text-muted-foreground mt-1">USD</p>
               </div>
               <div className="flex gap-2">
-                <Button className="flex-1">
+                <Button className="flex-1" disabled>
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Deposit
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1" disabled>
                   Withdraw
                 </Button>
               </div>
@@ -189,31 +189,12 @@ export default async function UserProfilePage() {
                 {user.emailVerified ? (
                   <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
                 ) : (
-                  <Button size="sm" variant="outline" className="shrink-0">
-                    Verify
-                  </Button>
-                )}
-              </div>
-
-              {/* Account Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <Shield className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm">Account Status</p>
-                    <p className="text-xs text-muted-foreground">
-                      {user.isVerified
-                        ? "Fully verified"
-                        : "Pending verification"}
-                    </p>
-                  </div>
-                </div>
-                {user.isVerified ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-                ) : (
-                  <Button size="sm" variant="outline" className="shrink-0">
-                    Complete
-                  </Button>
+                  // <Button size="sm" variant="outline" className="shrink-0">
+                  //   Verify
+                  // </Button>
+                  <>
+                    <ResendVerificationTrigger email={user.email} />
+                  </>
                 )}
               </div>
 
@@ -229,9 +210,13 @@ export default async function UserProfilePage() {
                       </p>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline" className="shrink-0">
-                    Change
-                  </Button>
+                  <>
+                    <ResetPassTrigger
+                      email=""
+                      name="Send Reset Link"
+                      variant="button"
+                    />
+                  </>
                 </div>
               )}
             </CardContent>
@@ -274,7 +259,8 @@ export default async function UserProfilePage() {
                 <Button
                   key={item.title}
                   variant="outline"
-                  className={`justify-start h-auto py-4 ${item.danger ? "border-red-200 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950" : ""}`}>
+                  className={`justify-start h-auto py-4 ${item.danger ? "border-red-200 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950" : ""}`}
+                  disabled>
                   <div className="flex items-start gap-3 text-left">
                     <item.icon
                       className={`w-5 h-5 mt-0.5 shrink-0 ${item.danger ? "text-red-600" : "text-muted-foreground"}`}

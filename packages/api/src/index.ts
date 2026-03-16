@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import orderRoutes from "./routes/order.js";
+import { orderRouter } from "./routes/order.js";
 
 const app = express();
 const PORT = 3000;
@@ -12,7 +12,7 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "Server is Live" });
 });
 
-app.use("/api/v1/order", orderRoutes);
+app.use("/api/v1/order", orderRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

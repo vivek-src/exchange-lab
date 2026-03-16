@@ -1,7 +1,7 @@
 import { createClient } from "redis";
 import type { RedisClientType } from "redis";
 import { randomUUID } from "crypto";
-import type { EngineResponse } from "@exchange-lab/shared";
+import type { EngineResponse, EngineRequest } from "@exchange-lab/shared";
 
 export class EngineClient {
   private client: RedisClientType;
@@ -20,7 +20,7 @@ export class EngineClient {
     }
     return this.instance;
   }
-  public sendRequest(message: any) {
+  public sendRequest(message: EngineRequest) {
     return new Promise<EngineResponse>((resolve, reject) => {
       const id = randomUUID();
 

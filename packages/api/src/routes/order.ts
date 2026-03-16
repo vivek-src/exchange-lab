@@ -21,7 +21,7 @@ orderRouter.post("/", async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({
       error: "Invalid order input",
-      details: parsed.error.flatten(),
+      details: parsed.error.issues,
     });
   }
   //send order to the redis queue

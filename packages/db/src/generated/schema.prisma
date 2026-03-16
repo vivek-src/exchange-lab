@@ -58,7 +58,8 @@ model Account {
 model Wallet {
   userId       String        @id
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  balance      Decimal       @default(10000)
+  balance      Decimal       @default(50000)
+  assetsHeld   Json          @default("{}")
   transactions Transaction[]
   updatedAt    DateTime?     @updatedAt
 }

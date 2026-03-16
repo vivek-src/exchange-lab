@@ -152,6 +152,7 @@ exports.Prisma.AccountScalarFieldEnum = {
 exports.Prisma.WalletScalarFieldEnum = {
   userId: 'userId',
   balance: 'balance',
+  assetsHeld: 'assetsHeld',
   updatedAt: 'updatedAt'
 };
 
@@ -183,6 +184,10 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -191,6 +196,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.TransactionType = exports.$Enums.TransactionType = {
   CREDIT: 'CREDIT',

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Wallet" ADD COLUMN     "assetsHeld" JSONB NOT NULL DEFAULT '{}',
+ALTER COLUMN "balance" SET DEFAULT 50000;

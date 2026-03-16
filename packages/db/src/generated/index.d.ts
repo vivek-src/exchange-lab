@@ -3398,6 +3398,7 @@ export namespace Prisma {
   export type WalletCountAggregateOutputType = {
     userId: number
     balance: number
+    assetsHeld: number
     updatedAt: number
     _all: number
   }
@@ -3426,6 +3427,7 @@ export namespace Prisma {
   export type WalletCountAggregateInputType = {
     userId?: true
     balance?: true
+    assetsHeld?: true
     updatedAt?: true
     _all?: true
   }
@@ -3519,6 +3521,7 @@ export namespace Prisma {
   export type WalletGroupByOutputType = {
     userId: string
     balance: Decimal
+    assetsHeld: JsonValue
     updatedAt: Date | null
     _count: WalletCountAggregateOutputType | null
     _avg: WalletAvgAggregateOutputType | null
@@ -3544,6 +3547,7 @@ export namespace Prisma {
   export type WalletSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     userId?: boolean
     balance?: boolean
+    assetsHeld?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     transactions?: boolean | Wallet$transactionsArgs<ExtArgs>
@@ -3553,6 +3557,7 @@ export namespace Prisma {
   export type WalletSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     userId?: boolean
     balance?: boolean
+    assetsHeld?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["wallet"]>
@@ -3560,6 +3565,7 @@ export namespace Prisma {
   export type WalletSelectScalar = {
     userId?: boolean
     balance?: boolean
+    assetsHeld?: boolean
     updatedAt?: boolean
   }
 
@@ -3581,6 +3587,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       userId: string
       balance: Prisma.Decimal
+      assetsHeld: Prisma.JsonValue
       updatedAt: Date | null
     }, ExtArgs["result"]["wallet"]>
     composites: {}
@@ -3979,6 +3986,7 @@ export namespace Prisma {
   interface WalletFieldRefs {
     readonly userId: FieldRef<"Wallet", 'String'>
     readonly balance: FieldRef<"Wallet", 'Decimal'>
+    readonly assetsHeld: FieldRef<"Wallet", 'Json'>
     readonly updatedAt: FieldRef<"Wallet", 'DateTime'>
   }
     
@@ -6378,6 +6386,7 @@ export namespace Prisma {
   export const WalletScalarFieldEnum: {
     userId: 'userId',
     balance: 'balance',
+    assetsHeld: 'assetsHeld',
     updatedAt: 'updatedAt'
   };
 
@@ -6421,6 +6430,13 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
   export const QueryMode: {
     default: 'default',
     insensitive: 'insensitive'
@@ -6435,6 +6451,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -6502,6 +6527,13 @@ export namespace Prisma {
    * Reference to a field of type 'Decimal[]'
    */
   export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
     
 
 
@@ -6730,6 +6762,7 @@ export namespace Prisma {
     NOT?: WalletWhereInput | WalletWhereInput[]
     userId?: StringFilter<"Wallet"> | string
     balance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonFilter<"Wallet">
     updatedAt?: DateTimeNullableFilter<"Wallet"> | Date | string | null
     user?: XOR<UserRelationFilter, UserWhereInput>
     transactions?: TransactionListRelationFilter
@@ -6738,6 +6771,7 @@ export namespace Prisma {
   export type WalletOrderByWithRelationInput = {
     userId?: SortOrder
     balance?: SortOrder
+    assetsHeld?: SortOrder
     updatedAt?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
     transactions?: TransactionOrderByRelationAggregateInput
@@ -6749,6 +6783,7 @@ export namespace Prisma {
     OR?: WalletWhereInput[]
     NOT?: WalletWhereInput | WalletWhereInput[]
     balance?: DecimalFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonFilter<"Wallet">
     updatedAt?: DateTimeNullableFilter<"Wallet"> | Date | string | null
     user?: XOR<UserRelationFilter, UserWhereInput>
     transactions?: TransactionListRelationFilter
@@ -6757,6 +6792,7 @@ export namespace Prisma {
   export type WalletOrderByWithAggregationInput = {
     userId?: SortOrder
     balance?: SortOrder
+    assetsHeld?: SortOrder
     updatedAt?: SortOrderInput | SortOrder
     _count?: WalletCountOrderByAggregateInput
     _avg?: WalletAvgOrderByAggregateInput
@@ -6771,6 +6807,7 @@ export namespace Prisma {
     NOT?: WalletScalarWhereWithAggregatesInput | WalletScalarWhereWithAggregatesInput[]
     userId?: StringWithAggregatesFilter<"Wallet"> | string
     balance?: DecimalWithAggregatesFilter<"Wallet"> | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonWithAggregatesFilter<"Wallet">
     updatedAt?: DateTimeNullableWithAggregatesFilter<"Wallet"> | Date | string | null
   }
 
@@ -7123,6 +7160,7 @@ export namespace Prisma {
 
   export type WalletCreateInput = {
     balance?: Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: Date | string | null
     user: UserCreateNestedOneWithoutWalletInput
     transactions?: TransactionCreateNestedManyWithoutWalletInput
@@ -7131,12 +7169,14 @@ export namespace Prisma {
   export type WalletUncheckedCreateInput = {
     userId: string
     balance?: Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: Date | string | null
     transactions?: TransactionUncheckedCreateNestedManyWithoutWalletInput
   }
 
   export type WalletUpdateInput = {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutWalletNestedInput
     transactions?: TransactionUpdateManyWithoutWalletNestedInput
@@ -7145,6 +7185,7 @@ export namespace Prisma {
   export type WalletUncheckedUpdateInput = {
     userId?: StringFieldUpdateOperationsInput | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     transactions?: TransactionUncheckedUpdateManyWithoutWalletNestedInput
   }
@@ -7152,17 +7193,20 @@ export namespace Prisma {
   export type WalletCreateManyInput = {
     userId: string
     balance?: Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: Date | string | null
   }
 
   export type WalletUpdateManyMutationInput = {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type WalletUncheckedUpdateManyInput = {
     userId?: StringFieldUpdateOperationsInput | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
@@ -7615,6 +7659,28 @@ export namespace Prisma {
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
   }
+  export type JsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type TransactionListRelationFilter = {
     every?: TransactionWhereInput
@@ -7629,6 +7695,7 @@ export namespace Prisma {
   export type WalletCountOrderByAggregateInput = {
     userId?: SortOrder
     balance?: SortOrder
+    assetsHeld?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -7666,6 +7733,31 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type TokenCountOrderByAggregateInput = {
@@ -8273,6 +8365,28 @@ export namespace Prisma {
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
   }
+  export type NestedJsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedEnumTransactionTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.TransactionType | EnumTransactionTypeFieldRefInput<$PrismaModel>
@@ -8375,12 +8489,14 @@ export namespace Prisma {
 
   export type WalletCreateWithoutUserInput = {
     balance?: Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: Date | string | null
     transactions?: TransactionCreateNestedManyWithoutWalletInput
   }
 
   export type WalletUncheckedCreateWithoutUserInput = {
     balance?: Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: Date | string | null
     transactions?: TransactionUncheckedCreateNestedManyWithoutWalletInput
   }
@@ -8454,12 +8570,14 @@ export namespace Prisma {
 
   export type WalletUpdateWithoutUserInput = {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     transactions?: TransactionUpdateManyWithoutWalletNestedInput
   }
 
   export type WalletUncheckedUpdateWithoutUserInput = {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     transactions?: TransactionUncheckedUpdateManyWithoutWalletNestedInput
   }
@@ -8780,6 +8898,7 @@ export namespace Prisma {
 
   export type WalletCreateWithoutTransactionsInput = {
     balance?: Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: Date | string | null
     user: UserCreateNestedOneWithoutWalletInput
   }
@@ -8787,6 +8906,7 @@ export namespace Prisma {
   export type WalletUncheckedCreateWithoutTransactionsInput = {
     userId: string
     balance?: Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: Date | string | null
   }
 
@@ -8808,6 +8928,7 @@ export namespace Prisma {
 
   export type WalletUpdateWithoutTransactionsInput = {
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutWalletNestedInput
   }
@@ -8815,6 +8936,7 @@ export namespace Prisma {
   export type WalletUncheckedUpdateWithoutTransactionsInput = {
     userId?: StringFieldUpdateOperationsInput | string
     balance?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    assetsHeld?: JsonNullValueInput | InputJsonValue
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 

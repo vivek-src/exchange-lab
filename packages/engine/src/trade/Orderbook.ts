@@ -16,7 +16,7 @@ export interface Fill {
   markerOrderId: string;
 }
 
-export class orderbook {
+export class Orderbook {
   bids: Order[];
   asks: Order[];
   baseAsset: string;
@@ -41,27 +41,32 @@ export class orderbook {
     return;
   }
   addOrder(order: Order): { executedQty: number; fills: Fill[] } {
+    let finalExecutedQty = 0;
+    let finalFills: Fill[] = [];
+
     if (order.side == "buy") {
       const { executedQty, fills } = this.matchBuytoAsks(order);
       order.filled = executedQty;
-      if (executedQty === order.quantity) {
-        return {
-          executedQty,
-          fills,
-        };
+      finalExecutedQty = executedQty;
+      finalFills = fills;
+
+      if (executedQty < order.quantity) {
+        this.bids.push(order);
       }
-      this.bids.push(order);
     } else {
       const { executedQty, fills } = this.matchSelltoBids(order);
       order.filled = executedQty;
-      if (executedQty === order.quantity) {
-        return {
-          executedQty,
-          fills,
-        };
+      finalExecutedQty = executedQty;
+      finalFills = fills;
+
+      if (executedQty < order.quantity) {
+        this.asks.push(order);
       }
-      this.asks.push(order);
     }
+    return {
+      executedQty: finalExecutedQty,
+      fills: finalFills,
+    };
   }
   matchBuytoAsks(order: Order): { fills: Fill[]; executedQty: number } {
     const fills: Fill[] = [];

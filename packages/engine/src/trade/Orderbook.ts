@@ -189,6 +189,20 @@ export class orderbook {
       asks,
     };
   }
+  // Relies directly on data hooked to map when matchign happens
+  //   getDepth() {
+  //     const bids: [string, string][] = [];
+  //     const asks: [string, string][] = [];
+  //     for (const [price, quantity] of Object.entries(this.bidDepthMap)) {
+  //         bids.push([price, quantity.toString()]);
+  //     }
+
+  //     for (const [price, quantity] of Object.entries(this.askDepthMap)) {
+  //         asks.push([price, quantity.toString()]);
+  //     }
+
+  //     return { bids, asks };
+  // }
   getOpenOrder(userId: string): Order[] {
     //Filer order with user ID and return to the user
     const asks = this.asks.filter((x) => x.userId === userId);

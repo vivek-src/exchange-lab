@@ -1,5 +1,4 @@
 import { BASE_CURRENCY } from "@exchange-lab/shared";
-import { randomUUID } from "crypto";
 export interface Order {
   price: number;
   quantity: number;
@@ -144,5 +143,74 @@ export class orderbook {
       }
     }
     return { fills, executedQty };
+  }
+  getDepth() {
+    // Definign temp Vars
+    const bids: [string, string][] = [];
+    const asks: [string, string][] = [];
+
+    // hash for easy matching price
+    const bidsObject: { [key: string]: number } = {};
+    const asksObject: { [key: string]: number } = {};
+
+    // Aggregating Bids of same price
+    for (let i = 0; i < this.bids.length; i++) {
+      const order = this.bids[i]!;
+      if (!bidsObject[order.price]) {
+        bidsObject[order.price] = 0;
+      }
+      const currentQty = bidsObject[order.price] || 0;
+
+      bidsObject[order.price] = currentQty + order.quantity;
+    }
+
+    // Aggregating asks of same price
+    for (let i = 0; i < this.asks.length; i++) {
+      const order = this.asks[i]!;
+      if (!asksObject[order.price]) {
+        asksObject[order.price] = 0;
+      }
+      const currentQty = asksObject[order.price] || 0;
+      asksObject[order.price] = currentQty + order.quantity;
+    }
+
+    // Formatting Return Array
+    for (const [price, quantity] of Object.entries(bidsObject)) {
+      bids.push([price, quantity.toString()]);
+    }
+
+    for (const [price, quantity] of Object.entries(asksObject)) {
+      asks.push([price, quantity.toString()]);
+    }
+
+    // retirn Bids and asks array
+    return {
+      bids,
+      asks,
+    };
+  }
+  getOpenOrder(userId: string): Order[] {
+    //Filer order with user ID and return to the user
+    const asks = this.asks.filter((x) => x.userId === userId);
+    const bids = this.bids.filter((x) => x.userId === userId);
+    return [...asks, ...bids];
+  }
+  cancelBid(order: Order) {
+    // get index of the bid go to the index and remove the element at that index from the bids
+    const index = this.bids.findIndex((x) => x.orderId === order.orderId);
+    if (index !== -1) {
+      const price = this.bids[index]!.price;
+      this.bids.splice(index, 1);
+      return price;
+    }
+  }
+  cancelAsk(order: Order) {
+    //Same logic here also
+    const index = this.asks.findIndex((x) => x.orderId === order.orderId);
+    if (index !== -1) {
+      const price = this.asks[index]!.price;
+      this.asks.splice(index, 1);
+      return price;
+    }
   }
 }

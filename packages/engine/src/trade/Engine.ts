@@ -65,20 +65,26 @@ export class Engine {
   process({ message, clientId }: { message: EngineRequest; clientId: string }) {
     switch (message.type) {
       case CREATE_ORDER:
+        const newOrderId = crypto.randomUUID();
         try {
-          const { executedQty, fills, orderId } = this.createOrder(
+          const { executedQty, fills } = this.createOrder(
             message.data.market,
             message.data.price,
             message.data.quantity,
             message.data.side,
             message.data.userId,
+            newOrderId,
           );
           RedisManager.getInstance().sendToApi(clientId, {
             type: "ORDER_PLACED",
             payload: {
-              orderId,
+              orderId: newOrderId,
               executedQty,
-              fills,
+              fills: fills.map((fill) => ({
+                price: fill.price.toString(),
+                qty: fill.qty,
+                tradeId: fill.tradeId,
+              })),
             },
           });
         } catch (e) {
@@ -243,6 +249,7 @@ export class Engine {
     quantity: string,
     side: "buy" | "sell",
     userId: string,
+    newOrderId: string,
   ) {
     const orderbook = this.orderbooks.find(
       (orderbook) => orderbook.ticker() === market,
@@ -272,7 +279,7 @@ export class Engine {
     const order: Order = {
       price: Number(price),
       quantity: Number(quantity),
-      orderId: randomUUID(),
+      orderId: newOrderId,
       filled: 0,
       side,
       userId,
@@ -460,4 +467,35 @@ export class Engine {
     // update balance
     userWallet[BASE_CURRENCY].available += amount;
   }
+  updateDbOrders(
+    order: Order,
+    executedQty: number,
+    fills: Fill[],
+    market: string,
+  ) {
+    // Broadcast Incoming Order Update
+    RedisManager.getInstance().pushMessage({
+      type: ORDER_UPDATE,
+      data: {
+        orderId: order.orderId,
+        executedQty: executedQty, // Total filled qty for the incoming order
+        market: market,
+        price: order.price.toString(), // Kept as string for DB safety
+        quantity: order.quantity.toString(),
+        side: order.side,
+      },
+    });
+
+    // Broadcast Maker (Resting) Orders Updates
+    for (const fill of fills) {
+      RedisManager.getInstance().pushMessage({
+        type: ORDER_UPDATE,
+        data: {
+          orderId: fill.makerOrderId,
+          executedQty: fill.qty, // The amount this specific resting order was filled by
+        },
+      });
+    }
+  }
+ 
 }

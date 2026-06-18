@@ -9,7 +9,7 @@ type DbMessage =
       type: typeof TRADE_ADDED;
       data: {
         id: string;
-        isBuyer: boolean;
+        isBuyerMaker: boolean;
         price: string;
         quantity: string;
         quoteQuantity: string;

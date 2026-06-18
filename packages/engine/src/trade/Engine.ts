@@ -509,7 +509,7 @@ export class Engine {
         data: {
           market: market,
           id: fill.tradeId.toString(),
-          isBuyer: side === "buy",
+          isBuyerMaker: side === "sell",
           price: fill.price.toString(),
           quantity: fill.qty.toString(),
           quoteQuantity: (fill.qty * fill.price).toString(),

@@ -497,5 +497,25 @@ export class Engine {
       });
     }
   }
- 
+  createDbTrades(
+    fills: Fill[],
+    market: string,
+
+    side: "buy" | "sell",
+  ) {
+    for (const fill of fills) {
+      RedisManager.getInstance().pushMessage({
+        type: TRADE_ADDED,
+        data: {
+          market: market,
+          id: fill.tradeId.toString(),
+          isBuyer: side === "buy",
+          price: fill.price.toString(),
+          quantity: fill.qty.toString(),
+          quoteQuantity: (fill.qty * fill.price).toString(),
+          timestamp: Date.now(),
+        },
+      });
+    }
+  }
 }

@@ -291,7 +291,7 @@ export class Engine {
     this.createDbTrades(fills, market, userId);
     this.updateDbOrders(order, executedQty, fills, market);
     this.publisWsDepthUpdates(fills, price, side, market);
-    this.publishWsTrades(fills, userId, market);
+    this.publishWsTrades(fills, market, side);
     return { executedQty, fills, orderId: order.orderId };
   }
   saveSnapshot() {
@@ -514,6 +514,21 @@ export class Engine {
           quantity: fill.qty.toString(),
           quoteQuantity: (fill.qty * fill.price).toString(),
           timestamp: Date.now(),
+        },
+      });
+    }
+  }
+  publishWsTrades(fills: Fill[], market: string, side: "buy" | "sell") {
+    for (const fill of fills) {
+      RedisManager.getInstance().publishMessage(`trade@${market}`, {
+        stream: `trade@${market}`,
+        data: {
+          e: "trade",
+          t: fill.tradeId,
+          m: side === "sell",
+          p: fill.price.toString(),
+          q: fill.qty.toString(),
+          s: market,
         },
       });
     }

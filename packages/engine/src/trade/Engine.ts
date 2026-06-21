@@ -56,7 +56,6 @@ export class Engine {
       this.balances = new Map(snapshotSnapshot.balances);
     } else {
       this.orderbooks = [new Orderbook(`RIL`, [], [], 0, 0)];
-      this.setBaseBalances();
     }
     setInterval(() => {
       this.saveSnapshot();
@@ -106,7 +105,12 @@ export class Engine {
           const cancelOrderbook = this.orderbooks.find(
             (order) => order.ticker() === market,
           );
+          const baseAsset = market.split("_")[0];
           const quoteAsset = market.split("_")[1];
+
+          if (!baseAsset || !quoteAsset) {
+            throw new Error(`Invalid market format: ${market}`);
+          }
           if (!cancelOrderbook) {
             throw new Error("No orderbook found.");
           }
@@ -116,32 +120,39 @@ export class Engine {
           if (!order) {
             throw new Error("No order found");
           }
+
+          const userWallet = this.balances.get(order.userId);
+          if (!userWallet) {
+            throw new Error("User wallet not found");
+          }
+
           if (order.side === "buy") {
-            // Cancling  the order here
             const price = cancelOrderbook.cancelBid(order);
-            const leftQty = (order.quantity - order.filled) * order.price;
-            // Release Locked Funds
-            //@ts-ignore
-            this.balances.get(order.userId)[BASE_CURRENCY]?.available +=
-              leftQty;
-            //@ts-ignore
-            this.balances.get(order.userId)[BASE_CURRENCY]?.locked -= leftQty;
+            const remainingQty = order.quantity - order.filled;
+            const lockedValue = remainingQty * order.price;
+
+            if (userWallet[quoteAsset]) {
+              userWallet[quoteAsset].available += lockedValue;
+              userWallet[quoteAsset].locked -= lockedValue;
+            }
+
             if (price) {
               this.sendUpdatedDepthAt(price.toString(), market);
             }
           } else {
             const price = cancelOrderbook.cancelAsk(order);
-            const leftQty = (order.quantity - order.filled) * order.price;
-            // Release Locked Assets
-            //@ts-ignore
-            this.balances.get(order.userId)[quoteAsset]?.available += leftQty;
-            //@ts-ignore
-            this.balances.get(order.userId)[quoteAsset]?.locked -= leftQty;
+            const remainingQty = order.quantity - order.filled;
+
+            if (userWallet[baseAsset]) {
+              userWallet[baseAsset].available += remainingQty;
+              userWallet[baseAsset].locked -= remainingQty;
+            }
+
             if (price) {
               this.sendUpdatedDepthAt(price.toString(), market);
             }
           }
-          //send response to  the API back via subscribed channel by the FE
+
           RedisManager.getInstance().sendToApi(clientId, {
             type: "ORDER_CANCELLED",
             payload: {
@@ -151,9 +162,8 @@ export class Engine {
             },
           });
         } catch (error) {
-          console.log("Error hwile cancelling order.\n" + error);
+          console.log("Error while cancelling order.\n" + error);
 
-          // safe fallbackS
           RedisManager.getInstance().sendToApi(clientId, {
             type: "ORDER_CANCELLED",
             payload: {

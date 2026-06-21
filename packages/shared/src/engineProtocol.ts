@@ -81,6 +81,7 @@ export type EngineResponse =
         orderId: string;
         executedQty: number;
         remainingQty: number;
+        error?: string;
       };
     }
   | {

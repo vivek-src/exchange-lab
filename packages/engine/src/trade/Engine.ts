@@ -288,7 +288,7 @@ export class Engine {
     const { fills, executedQty } = orderbook.addOrder(order);
     this.updateBalance(userId, baseAsset, quoteAsset, side, fills);
 
-    this.createDbTrades(fills, market, userId);
+    this.createDbTrades(fills, market, side);
     this.updateDbOrders(order, executedQty, fills, market);
     this.publishWsDepthUpdates(fills, price, side, market);
     this.publishWsTrades(fills, market, side);
@@ -574,5 +574,25 @@ export class Engine {
         },
       });
     }
+  }
+  sendUpdatedDepthAt(price: string, market: string) {
+    const orderbook = this.orderbooks.find((o) => o.ticker() === market);
+    if (!orderbook) return;
+
+    const depth = orderbook.getDepth();
+    if (!depth) return;
+
+    //Use .find() instead of .filter()
+    const updatedBid = depth.bids.find((x) => x[0] === price);
+    const updatedAsk = depth.asks.find((x) => x[0] === price);
+
+    RedisManager.getInstance().publishMessage(`depth@${market}`, {
+      stream: `depth@${market}`,
+      data: {
+        a: updatedAsk ? [updatedAsk] : [[price, "0"]],
+        b: updatedBid ? [updatedBid] : [[price, "0"]],
+        e: "depth",
+      },
+    });
   }
 }

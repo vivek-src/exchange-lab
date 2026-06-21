@@ -2,16 +2,19 @@ import { createClient } from "redis";
 import { Engine } from "./trade/Engine.js";
 
 async function main() {
-  // const engine = await Engine.create();
+  const engine = new Engine();
+  if (!process.env.WITH_SNAPSHOT) {
+    await engine.setBaseBalances();
+  }
+
   const redisClient = createClient();
   await redisClient.connect();
   console.log("Connected to redis");
 
   while (true) {
-    const response = await redisClient.rPop("Messages" as string);
-    if (!response) {
-    } else {
-      Engine.process(JSON.parse(response));
+    const response = await redisClient.brPop("Messages", 0);
+    if (response) {
+      engine.process(JSON.parse(response.element));
     }
   }
 }

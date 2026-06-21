@@ -64,7 +64,7 @@ export class Engine {
   process({ message, clientId }: { message: EngineRequest; clientId: string }) {
     switch (message.type) {
       case CREATE_ORDER:
-        const newOrderId = crypto.randomUUID();
+        const newOrderId = randomUUID();
         try {
           const { executedQty, fills } = this.createOrder(
             message.data.market,
@@ -91,16 +91,17 @@ export class Engine {
           RedisManager.getInstance().sendToApi(clientId, {
             type: "ORDER_CANCELLED",
             payload: {
-              orderId: "",
+              orderId: newOrderId,
               executedQty: 0,
               remainingQty: 0,
+              error: e instanceof Error ? e.message : "Unknown error",
             },
           });
         }
         break;
       case CANCEL_ORDER:
+        const orderId = message.data.orderId;
         try {
-          const orderId = message.data.orderId;
           const market = message.data.market;
           const cancelOrderbook = this.orderbooks.find(
             (order) => order.ticker() === market,
@@ -163,13 +164,13 @@ export class Engine {
           });
         } catch (error) {
           console.log("Error while cancelling order.\n" + error);
-
           RedisManager.getInstance().sendToApi(clientId, {
             type: "ORDER_CANCELLED",
             payload: {
-              orderId: "",
+              orderId: orderId,
               executedQty: 0,
               remainingQty: 0,
+              error: error instanceof Error ? error.message : "Unknown error",
             },
           });
         }

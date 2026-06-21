@@ -396,53 +396,38 @@ export class Engine {
     side: "buy" | "sell",
     fills: Fill[],
   ) {
-    if (side === "buy") {
-      const userWallet = this.balances.get(userId);
-      if (!userWallet) {
-        throw new Error(`User wallet ${userId} not initialized`);
-      }
+    const userWallet = this.balances.get(userId);
+    if (!userWallet) {
+      throw new Error(`User wallet ${userId} not initialized`);
+    }
 
-      // Initialize asset if there no existing qty
-      if (!userWallet[baseAsset]) {
-        userWallet[baseAsset] = { available: 0, locked: 0 };
-      }
-      if (!userWallet[quoteAsset]) {
-        userWallet[quoteAsset] = { available: 0, locked: 0 };
-      }
+    if (!userWallet[baseAsset])
+      userWallet[baseAsset] = { available: 0, locked: 0 };
+    if (!userWallet[quoteAsset])
+      userWallet[quoteAsset] = { available: 0, locked: 0 };
 
-      for (const fill of fills) {
-        // Fetch the seller party
-        const otherWallet = this.balances.get(fill.otherUserId);
-        if (!otherWallet) {
-          throw new Error(`Counter-party wallet ${fill.otherUserId} not found`);
-        }
-        // Ensure counter-party's receiving asset exists
-        if (!otherWallet[baseAsset]) {
-          otherWallet[baseAsset] = { available: 0, locked: 0 };
-        }
-        if (!otherWallet[quoteAsset]) {
-          otherWallet[quoteAsset] = { available: 0, locked: 0 };
-        }
+    for (const fill of fills) {
+      const otherWallet = this.balances.get(fill.otherUserId);
+      if (!otherWallet)
+        throw new Error(`Counter-party wallet ${fill.otherUserId} not found`);
 
-        const fillCost = fill.qty * fill.price;
+      if (!otherWallet[baseAsset])
+        otherWallet[baseAsset] = { available: 0, locked: 0 };
+      if (!otherWallet[quoteAsset])
+        otherWallet[quoteAsset] = { available: 0, locked: 0 };
 
-        if (side === "buy") {
-          // Buyer/Maker gets Stock / Asset and gives INR
-          userWallet[quoteAsset].locked -= fillCost;
-          userWallet[baseAsset].available += fill.qty;
+      const fillCost = fill.qty * fill.price;
 
-          //Seller gets INR against the stock
-          otherWallet[baseAsset].locked -= fill.qty;
-          otherWallet[quoteAsset].available += fillCost;
-        } else {
-          // Seller gets Inr and gives Stock
-          userWallet[baseAsset].locked -= fill.qty;
-          userWallet[quoteAsset].available += fillCost;
-
-          // MAKER/Buyer gives INR and gains Asset/Stock
-          otherWallet[quoteAsset].locked -= fillCost;
-          otherWallet[baseAsset].available += fill.qty;
-        }
+      if (side === "buy") {
+        userWallet[quoteAsset].locked -= fillCost;
+        userWallet[baseAsset].available += fill.qty;
+        otherWallet[baseAsset].locked -= fill.qty;
+        otherWallet[quoteAsset].available += fillCost;
+      } else {
+        userWallet[baseAsset].locked -= fill.qty;
+        userWallet[quoteAsset].available += fillCost;
+        otherWallet[quoteAsset].locked -= fillCost;
+        otherWallet[baseAsset].available += fill.qty;
       }
     }
   }

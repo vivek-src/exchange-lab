@@ -210,11 +210,42 @@ export class Engine {
         }
         break;
       case ON_RAMP:
-        const userId = message.data.userId;
-        const amount = Number(message.data.amount);
-        this.onRamp(userId, amount);
-        break;
+        try {
+          const userId = message.data.userId;
+          const amountStr = message.data.amount;
+          const txnId = message.data.txnId;
 
+          const amount = Number(amountStr);
+
+          // Execute the deposit
+          this.onRamp(userId, amount);
+
+          // Send success receipt back to the frontend
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: ON_RAMP,
+            payload: {
+              status: "success",
+              message: `Successfully deposited ${amount} ${BASE_CURRENCY}`,
+              txnId: txnId,
+            },
+          });
+        } catch (error) {
+          console.log(
+            `Error during ON_RAMP for txn ${message.data?.txnId}:\n`,
+            error,
+          );
+
+          // Fail Response
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: ON_RAMP,
+            payload: {
+              status: "error",
+              message: "Failed to process deposit",
+              txnId: message.data?.txnId || "UNKNOWN",
+            },
+          });
+        }
+        break;
       case GET_DEPTH:
         try {
           const market = message.data.market;

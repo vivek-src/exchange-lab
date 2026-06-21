@@ -11,7 +11,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 
@@ -98,4 +97,20 @@ enum TransactionCategory {
   SIGNUP_BONUS
   ORDER_BUY
   ORDER_SELL
+}
+
+model Trades {
+  id            String   @id
+  market        String
+  price         Decimal
+  quantity      Decimal
+  quoteQuantity Decimal
+  isBuyerMaker  Boolean
+  timestamp     DateTime
+
+  // Essential index for fast K-line generation
+  @@index([market, timestamp(sort: Desc)]) 
+
+  // Maps the Prisma model to the exact lowercase table name
+  @@map("trades")
 }

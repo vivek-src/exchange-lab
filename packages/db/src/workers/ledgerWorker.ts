@@ -35,7 +35,7 @@ async function main() {
           const timestamp = new Date(data.data.timestamp);
 
           const query = `
-            INSERT INTO Trades (id, market, price, quantity, "quoteQuantity", "isBuyerMaker", timestamp) 
+            INSERT INTO trades (id, market, price, quantity, "quoteQuantity", "isBuyerMaker", timestamp) 
             VALUES ($1, $2, $3, $4, $5, $6, $7)
           `;
 

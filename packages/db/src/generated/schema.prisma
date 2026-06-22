@@ -101,16 +101,17 @@ enum TransactionCategory {
 }
 
 model Trades {
-  id            String   @id
+  id            String
   market        String
   price         Decimal
   quantity      Decimal
   quoteQuantity Decimal
   isBuyerMaker  Boolean
-  timestamp     DateTime
+  timestamp     DateTime @default(now())
 
-  // Essential index for fast K-line generation
+  // Composite key required by TimescaleDB partitioning
+  @@id([id, timestamp])
+  // Essential index for fast filtering
   @@index([market, timestamp(sort: Desc)])
-  // Maps the Prisma model to the exact lowercase table name
   @@map("trades")
 }

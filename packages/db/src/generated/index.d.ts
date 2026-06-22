@@ -8880,17 +8880,18 @@ export namespace Prisma {
   }
 
   export type TradesWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
+    id_timestamp?: TradesIdTimestampCompoundUniqueInput
     AND?: TradesWhereInput | TradesWhereInput[]
     OR?: TradesWhereInput[]
     NOT?: TradesWhereInput | TradesWhereInput[]
+    id?: StringFilter<"Trades"> | string
     market?: StringFilter<"Trades"> | string
     price?: DecimalFilter<"Trades"> | Decimal | DecimalJsLike | number | string
     quantity?: DecimalFilter<"Trades"> | Decimal | DecimalJsLike | number | string
     quoteQuantity?: DecimalFilter<"Trades"> | Decimal | DecimalJsLike | number | string
     isBuyerMaker?: BoolFilter<"Trades"> | boolean
     timestamp?: DateTimeFilter<"Trades"> | Date | string
-  }, "id">
+  }, "id_timestamp">
 
   export type TradesOrderByWithAggregationInput = {
     id?: SortOrder
@@ -9338,7 +9339,7 @@ export namespace Prisma {
     quantity: Decimal | DecimalJsLike | number | string
     quoteQuantity: Decimal | DecimalJsLike | number | string
     isBuyerMaker: boolean
-    timestamp: Date | string
+    timestamp?: Date | string
   }
 
   export type TradesUncheckedCreateInput = {
@@ -9348,7 +9349,7 @@ export namespace Prisma {
     quantity: Decimal | DecimalJsLike | number | string
     quoteQuantity: Decimal | DecimalJsLike | number | string
     isBuyerMaker: boolean
-    timestamp: Date | string
+    timestamp?: Date | string
   }
 
   export type TradesUpdateInput = {
@@ -9378,7 +9379,7 @@ export namespace Prisma {
     quantity: Decimal | DecimalJsLike | number | string
     quoteQuantity: Decimal | DecimalJsLike | number | string
     isBuyerMaker: boolean
-    timestamp: Date | string
+    timestamp?: Date | string
   }
 
   export type TradesUpdateManyMutationInput = {
@@ -9941,6 +9942,11 @@ export namespace Prisma {
     _sum?: NestedDecimalNullableFilter<$PrismaModel>
     _min?: NestedDecimalNullableFilter<$PrismaModel>
     _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type TradesIdTimestampCompoundUniqueInput = {
+    id: string
+    timestamp: Date | string
   }
 
   export type TradesCountOrderByAggregateInput = {

@@ -5,6 +5,7 @@ export const CANCEL_ORDER = "CANCEL_ORDER";
 export const ON_RAMP = "ON_RAMP";
 export const GET_DEPTH = "GET_DEPTH";
 export const GET_OPEN_ORDERS = "GET_OPEN_ORDERS";
+export const ADD_USER = "ADD_USER";
 
 // Engine → API responses
 
@@ -12,6 +13,7 @@ export const DEPTH = "DEPTH";
 export const ORDER_PLACED = "ORDER_PLACED";
 export const ORDER_CANCELLED = "ORDER_CANCELLED";
 export const OPEN_ORDERS = "OPEN_ORDERS";
+export const NEW_USER = "NEW_USER";
 
 // Engine → WS events
 

@@ -13,8 +13,8 @@ interface DbMessage {
     quoteQuantity: number; // totalCost (price * quantity)
     isBuyerMaker: boolean;
     timestamp: string;
-    buyerId: string; // <-- Make sure your engine includes this!
-    sellerId: string; // <-- Make sure your engine includes this!
+    buyerId: string;
+    sellerId: string;
   };
 }
 
@@ -38,16 +38,12 @@ async function main() {
       const data: DbMessage = JSON.parse(response.element);
 
       if (data.type === "TRADE_ADDED") {
-        const {
-          id,
-          market,
-          price,
-          quantity,
-          quoteQuantity,
-          buyerId,
-          sellerId,
-          isBuyerMaker,
-        } = data.data;
+        const { id, market, buyerId, sellerId, isBuyerMaker } = data.data;
+
+        const price = Number(data.data.price);
+        const quantity = Number(data.data.quantity);
+        const quoteQuantity = Number(data.data.quoteQuantity);
+
         const [baseAsset] = market.split("_"); // e.g., "VIVEK" or "RIL"
         const timestamp = new Date(data.data.timestamp);
 
@@ -119,7 +115,7 @@ async function main() {
           await pgClient.query(
             `
             INSERT INTO "Transaction" (id, "walletId", type, category, description, amount, "balanceAfter", ticker, quantity, price, "createdAt")
-            VALUES ($1, $2, 'DEBIT', 'ORDER_BUY', $3, $4, $5, $6, $7, $8, NOW())
+            VALUES ($1, $2, 'DEBIT'::"TransactionType", 'ORDER_BUY'::"TransactionCategory", $3, $4, $5, $6, $7, $8, NOW())
           `,
             [
               `tx_b_${id}`,
@@ -137,7 +133,7 @@ async function main() {
           await pgClient.query(
             `
             INSERT INTO "Transaction" (id, "walletId", type, category, description, amount, "balanceAfter", ticker, quantity, price, "createdAt")
-            VALUES ($1, $2, 'CREDIT', 'ORDER_SELL', $3, $4, $5, $6, $7, $8, NOW())
+            VALUES ($1, $2, 'CREDIT'::"TransactionType", 'ORDER_SELL'::"TransactionCategory", $3, $4, $5, $6, $7, $8, NOW())
           `,
             [
               `tx_s_${id}`,

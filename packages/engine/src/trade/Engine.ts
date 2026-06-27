@@ -26,6 +26,7 @@ interface UserBalance {
   };
 }
 export const BASE_CURRENCY = "INR";
+export const SUPPORTED_ASSETS = ["RIL", "TATA", "VIVEK"];
 
 export class Engine {
   private orderbooks: Orderbook[] = [];
@@ -55,7 +56,9 @@ export class Engine {
       );
       this.balances = new Map(snapshotSnapshot.balances);
     } else {
-      this.orderbooks = [new Orderbook(`RIL`, [], [], 0, 0)];
+      this.orderbooks = SUPPORTED_ASSETS.map(
+        (asset) => new Orderbook(asset, [], [], 0, 0),
+      );
     }
     setInterval(() => {
       this.saveSnapshot();
@@ -330,7 +333,7 @@ export class Engine {
     const { fills, executedQty } = orderbook.addOrder(order);
     this.updateBalance(userId, baseAsset, quoteAsset, side, fills);
 
-    this.createDbTrades(fills, market, side);
+    this.createDbTrades(fills, market, side, userId);
     this.updateDbOrders(order, executedQty, fills, market);
     this.publishWsDepthUpdates(fills, price, side, market);
     this.publishWsTrades(fills, market, side);
@@ -370,12 +373,19 @@ export class Engine {
               ? JSON.parse(wallet.assetsHeld)
               : wallet.assetsHeld;
 
-          // Faster and cleaner object iteration
           for (const [ticker, assetData] of Object.entries(assets)) {
-            userBalances[ticker] = {
-              available: Number((assetData as any).available ?? 0),
-              locked: Number((assetData as any).locked ?? 0),
-            };
+            if (typeof assetData === "number") {
+              // Handle flat structure: { RIL: 100 }
+              userBalances[ticker] = {
+                available: assetData,
+                locked: 0,
+              };
+            } else if (assetData && typeof assetData === "object") {
+              userBalances[ticker] = {
+                available: Number((assetData as any).available ?? 0),
+                locked: Number((assetData as any).locked ?? 0),
+              };
+            }
           }
         }
 
@@ -527,20 +537,26 @@ export class Engine {
   createDbTrades(
     fills: Fill[],
     market: string,
-
     side: "buy" | "sell",
+    userId: string,
   ) {
     for (const fill of fills) {
+      // Logic: If the Taker is buying, the Maker (otherUser) is selling, and vice versa.
+      const buyerId = side === "buy" ? userId : fill.otherUserId;
+      const sellerId = side === "sell" ? userId : fill.otherUserId;
+
       RedisManager.getInstance().pushMessage({
         type: TRADE_ADDED,
         data: {
           market: market,
           id: fill.tradeId.toString(),
-          isBuyerMaker: side === "sell",
+          isBuyerMaker: side === "sell", // If taker is selling, the maker was the buyer
           price: fill.price.toString(),
           quantity: fill.qty.toString(),
           quoteQuantity: (fill.qty * fill.price).toString(),
           timestamp: Date.now(),
+          buyerId: buyerId, // <-- NOW INCLUDED
+          sellerId: sellerId, // <-- NOW INCLUDED
         },
       });
     }

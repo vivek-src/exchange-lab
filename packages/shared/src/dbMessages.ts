@@ -9,6 +9,8 @@ export type DbMessage =
         quoteQuantity: string;
         timestamp: number;
         market: string;
+        buyerId: string;
+        sellerId: string;
       };
     }
   | {

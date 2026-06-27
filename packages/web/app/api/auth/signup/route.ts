@@ -3,6 +3,7 @@ import { NextResponse, NextRequest } from "next/server";
 import bcrypt from "bcrypt";
 import { sendEmail } from "@/lib/mailer";
 import { EmailType } from "@/lib/mailer";
+import { pingApiNewUser } from "@/lib/utils/pingApiNewUser";
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,6 +39,11 @@ export async function POST(req: NextRequest) {
         data: {
           userId: user.id,
           balance: 50000,
+          assetsHeld: {
+            VIVEK: 100, // Allotting 1,000 $VIVEK shares
+            TATA: 100, // Allotting 50 TATA shares
+            RIL: 100,
+          },
         },
       });
 
@@ -52,6 +58,49 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Ledger Receipt: VIVEK
+      await tx.transaction.create({
+        data: {
+          walletId: user.id,
+          type: "CREDIT",
+          category: "SIGNUP_BONUS",
+          description: "Welcome VIVEK coin airdrop",
+          amount: 0,
+          balanceAfter: 50000,
+          ticker: "VIVEK",
+          quantity: 100,
+        },
+      });
+
+      // Ledger Receipt: TATA
+      await tx.transaction.create({
+        data: {
+          walletId: user.id,
+          type: "CREDIT",
+          category: "SIGNUP_BONUS",
+          description: "Welcome TATA airdrop",
+          amount: 0,
+          balanceAfter: 50000,
+          ticker: "TATA",
+          quantity: 100,
+        },
+      });
+
+      // Ledger Receipt: RIL
+      await tx.transaction.create({
+        data: {
+          walletId: user.id,
+          type: "CREDIT",
+          category: "SIGNUP_BONUS",
+          description: "Welcome RIL airdrop",
+          amount: 0,
+          balanceAfter: 50000,
+          ticker: "RIL",
+          quantity: 100,
+        },
+      });
+
+      await pingApiNewUser(user.id);
       return user;
     });
 

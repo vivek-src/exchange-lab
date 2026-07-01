@@ -11,7 +11,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -99,4 +98,20 @@ enum TransactionCategory {
   SIGNUP_BONUS
   ORDER_BUY
   ORDER_SELL
+}
+
+model Trades {
+  id            String
+  market        String
+  price         Decimal
+  quantity      Decimal
+  quoteQuantity Decimal
+  isBuyerMaker  Boolean
+  timestamp     DateTime @default(now())
+
+  // Composite key required by TimescaleDB partitioning
+  @@id([id, timestamp])
+  // Essential index for fast filtering
+  @@index([market, timestamp(sort: Desc)])
+  @@map("trades")
 }

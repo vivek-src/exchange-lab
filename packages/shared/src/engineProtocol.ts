@@ -8,6 +8,8 @@ import {
   ORDER_PLACED,
   ORDER_CANCELLED,
   OPEN_ORDERS,
+  ADD_USER,
+  NEW_USER,
 } from "./engineEvents.js";
 
 //  Requests API => Engine
@@ -49,6 +51,12 @@ export type EngineRequest =
       data: {
         userId: string;
         market: string;
+      };
+    }
+  | {
+      type: typeof ADD_USER;
+      data: {
+        userId: string;
       };
     };
 
@@ -101,5 +109,11 @@ export type EngineResponse =
         status: "success" | "error";
         message: string;
         txnId?: string;
+      };
+    }
+  | {
+      type: typeof NEW_USER;
+      payload: {
+        status: "success" | "error";
       };
     };

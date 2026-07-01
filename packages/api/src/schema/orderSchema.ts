@@ -5,7 +5,7 @@ export const createOrderSchema = z.object({
   market: z
     .string()
     .min(3)
-    .regex(/^[A-Z]+$/),
+    .regex(/^[A-Z]+_[A-Z]+$/),
   side: z.enum(["buy", "sell"]),
   orderType: z.enum(["limit", "market"]),
   price: z.string().regex(/^\d+(\.\d+)?$/, "Price must be a valid number"),

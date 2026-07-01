@@ -3,6 +3,7 @@ import { prisma } from "@exchange-lab/db";
 import { RedisManager } from "../redisClient.js";
 import {
   DEPTH,
+  NEW_USER,
   OPEN_ORDERS,
   ORDER_UPDATE,
   TRADE_ADDED,
@@ -26,6 +27,7 @@ interface UserBalance {
   };
 }
 export const BASE_CURRENCY = "INR";
+export const SUPPORTED_ASSETS = ["RIL", "TATA", "VIVEK"];
 
 export class Engine {
   private orderbooks: Orderbook[] = [];
@@ -55,7 +57,9 @@ export class Engine {
       );
       this.balances = new Map(snapshotSnapshot.balances);
     } else {
-      this.orderbooks = [new Orderbook(`RIL`, [], [], 0, 0)];
+      this.orderbooks = SUPPORTED_ASSETS.map(
+        (asset) => new Orderbook(asset, [], [], 0, 0),
+      );
     }
     setInterval(() => {
       this.saveSnapshot();
@@ -246,6 +250,27 @@ export class Engine {
           });
         }
         break;
+      case "ADD_USER":
+        try {
+          const { userId } = message.data;
+          this.loadWalletIntoMemory(userId);
+          console.log(`Engine loaded balances for new user: ${userId}`);
+
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: NEW_USER,
+            payload: {
+              status: "success",
+            },
+          });
+        } catch (error) {
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: NEW_USER,
+            payload: {
+              status: "error",
+            },
+          });
+        }
+        break;
       case GET_DEPTH:
         try {
           const market = message.data.market;
@@ -330,7 +355,7 @@ export class Engine {
     const { fills, executedQty } = orderbook.addOrder(order);
     this.updateBalance(userId, baseAsset, quoteAsset, side, fills);
 
-    this.createDbTrades(fills, market, side);
+    this.createDbTrades(fills, market, side, userId);
     this.updateDbOrders(order, executedQty, fills, market);
     this.publishWsDepthUpdates(fills, price, side, market);
     this.publishWsTrades(fills, market, side);
@@ -343,45 +368,42 @@ export class Engine {
     };
     fs.writeFileSync("./snapshot.json", JSON.stringify(snapshotSnapshot));
   }
+  loadWalletIntoMemory(wallet: any) {
+    const userBalances: UserBalance = {};
+
+    userBalances[BASE_CURRENCY] = {
+      available: Number(wallet.balance?.toString() ?? "0"),
+      locked: 0,
+    };
+
+    if (wallet.assetsHeld) {
+      const assets =
+        typeof wallet.assetsHeld === "string"
+          ? JSON.parse(wallet.assetsHeld)
+          : wallet.assetsHeld;
+
+      for (const [ticker, assetData] of Object.entries(assets)) {
+        if (typeof assetData === "number") {
+          userBalances[ticker] = { available: assetData, locked: 0 };
+        } else if (assetData && typeof assetData === "object") {
+          userBalances[ticker] = {
+            available: Number((assetData as any).available ?? 0),
+            locked: Number((assetData as any).locked ?? 0),
+          };
+        }
+      }
+    }
+
+    this.balances.set(wallet.userId, userBalances);
+  }
   async setBaseBalances() {
     try {
-      const wallets = await prisma.wallet.findMany({
-        select: {
-          userId: true,
-          balance: true,
-          assetsHeld: true,
-        },
-      });
+      const wallets = await prisma.wallet.findMany();
 
       this.balances.clear();
-
       for (const wallet of wallets) {
-        const userBalances: UserBalance = {};
-
-        // Prisma Decimal Safety
-        userBalances[BASE_CURRENCY] = {
-          available: Number(wallet.balance?.toString() ?? "0"),
-          locked: 0,
-        };
-
-        if (wallet.assetsHeld) {
-          const assets =
-            typeof wallet.assetsHeld === "string"
-              ? JSON.parse(wallet.assetsHeld)
-              : wallet.assetsHeld;
-
-          // Faster and cleaner object iteration
-          for (const [ticker, assetData] of Object.entries(assets)) {
-            userBalances[ticker] = {
-              available: Number((assetData as any).available ?? 0),
-              locked: Number((assetData as any).locked ?? 0),
-            };
-          }
-        }
-
-        this.balances.set(wallet.userId, userBalances);
+        this.loadWalletIntoMemory(wallet);
       }
-
       console.log(`Loaded balances for ${this.balances.size} users`);
     } catch (error) {
       console.error("Failed to fetch balances from DB:", error);
@@ -527,20 +549,26 @@ export class Engine {
   createDbTrades(
     fills: Fill[],
     market: string,
-
     side: "buy" | "sell",
+    userId: string,
   ) {
     for (const fill of fills) {
+      // Logic: If the Taker is buying, the Maker (otherUser) is selling, and vice versa.
+      const buyerId = side === "buy" ? userId : fill.otherUserId;
+      const sellerId = side === "sell" ? userId : fill.otherUserId;
+
       RedisManager.getInstance().pushMessage({
         type: TRADE_ADDED,
         data: {
           market: market,
           id: fill.tradeId.toString(),
-          isBuyerMaker: side === "sell",
+          isBuyerMaker: side === "sell", // If taker is selling, the maker was the buyer
           price: fill.price.toString(),
           quantity: fill.qty.toString(),
           quoteQuantity: (fill.qty * fill.price).toString(),
           timestamp: Date.now(),
+          buyerId: buyerId, // <-- NOW INCLUDED
+          sellerId: sellerId, // <-- NOW INCLUDED
         },
       });
     }

@@ -12,7 +12,7 @@ async function main() {
   console.log("Connected to redis");
 
   while (true) {
-    const response = await redisClient.brPop("Messages", 0);
+    const response = await redisClient.brPop("messages", 0);
     if (response) {
       engine.process(JSON.parse(response.element));
     }

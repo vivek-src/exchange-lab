@@ -33,7 +33,8 @@ orderRouter.post("/", async (req, res) => {
 
     return res.status(201).json(response.payload);
   } catch (err) {
-    return res.status(500).json({ error: "Engine error" });
+    console.log(err);
+    return res.status(500).json({ error: "Engine error", err });
   }
 });
 

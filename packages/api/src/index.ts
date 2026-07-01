@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { orderRouter } from "./routes/order.js";
+import { pingEngine } from "./routes/pingEngineNewUser.js";
 
 const app = express();
 const PORT = 3000;
@@ -13,6 +14,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/v1/order", orderRouter);
+app.use("/api/v1/newuser", pingEngine);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

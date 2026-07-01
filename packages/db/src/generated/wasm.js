@@ -179,6 +179,16 @@ exports.Prisma.TransactionScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.TradesScalarFieldEnum = {
+  id: 'id',
+  market: 'market',
+  price: 'price',
+  quantity: 'quantity',
+  quoteQuantity: 'quoteQuantity',
+  isBuyerMaker: 'isBuyerMaker',
+  timestamp: 'timestamp'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -219,7 +229,8 @@ exports.Prisma.ModelName = {
   Account: 'Account',
   Wallet: 'Wallet',
   Token: 'Token',
-  Transaction: 'Transaction'
+  Transaction: 'Transaction',
+  Trades: 'Trades'
 };
 
 /**

@@ -71,12 +71,17 @@ WITH NO DATA;
 SELECT add_continuous_aggregate_policy('klines_1m',
   start_offset => INTERVAL '1 hour',
   end_offset => INTERVAL '0 seconds',
-  schedule_interval => INTERVAL '10 seconds');
+  schedule_interval => INTERVAL '1 minute');
 
 SELECT add_continuous_aggregate_policy('klines_1h',
   start_offset => INTERVAL '2 days',
   end_offset => INTERVAL '0 seconds',
-  schedule_interval => INTERVAL '1 minute');
+  schedule_interval => INTERVAL '5 minute');
+  
+SELECT add_continuous_aggregate_policy('klines_1d',
+  start_offset => INTERVAL '30 days',
+  end_offset => INTERVAL '0 seconds',
+  schedule_interval => INTERVAL '15 minutes');
 
 SELECT add_continuous_aggregate_policy('klines_1w',
   start_offset => INTERVAL '2 months',

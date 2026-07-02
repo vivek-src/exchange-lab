@@ -1,17 +1,24 @@
--- This is an empty migration.
-
--- 1. Ensure the extension is enabled
+-- Enable TimescaleDB
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
--- 2. Upgrade the 'trades' table to a hypertable (Safe to run if it already is one)
-SELECT create_hypertable('trades', 'timestamp', if_not_exists => TRUE);
+-- Convert trades table into hypertable
+SELECT create_hypertable(
+    'trades',
+    'timestamp',
+    if_not_exists => TRUE
+);
 
--- 3. Create 1-Minute Continuous Aggregate
-CREATE MATERIALIZED VIEW IF NOT EXISTS klines_1m 
-WITH (timescaledb.continuous) AS
+----------------------------------------------------
+-- 1 Minute Candles
+----------------------------------------------------
+CREATE MATERIALIZED VIEW IF NOT EXISTS klines_1m
+WITH (
+    timescaledb.continuous,
+    timescaledb.materialized_only = false
+) AS
 SELECT
     market,
-    time_bucket('1 minute', timestamp) AS bucket,
+    time_bucket(INTERVAL '1 minute', timestamp) AS bucket,
     first(price, timestamp) AS open,
     max(price) AS high,
     min(price) AS low,
@@ -21,12 +28,17 @@ FROM trades
 GROUP BY market, bucket
 WITH NO DATA;
 
--- 4. Create 1-Hour Continuous Aggregate
-CREATE MATERIALIZED VIEW IF NOT EXISTS klines_1h 
-WITH (timescaledb.continuous) AS
+----------------------------------------------------
+-- 1 Hour Candles
+----------------------------------------------------
+CREATE MATERIALIZED VIEW IF NOT EXISTS klines_1h
+WITH (
+    timescaledb.continuous,
+    timescaledb.materialized_only = false
+) AS
 SELECT
     market,
-    time_bucket('1 hour', timestamp) AS bucket,
+    time_bucket(INTERVAL '1 hour', timestamp) AS bucket,
     first(price, timestamp) AS open,
     max(price) AS high,
     min(price) AS low,
@@ -36,12 +48,17 @@ FROM trades
 GROUP BY market, bucket
 WITH NO DATA;
 
--- 5. Create 1-Day (24-Hour) Continuous Aggregate
-CREATE MATERIALIZED VIEW IF NOT EXISTS klines_1d 
-WITH (timescaledb.continuous) AS
+----------------------------------------------------
+-- 1 Day Candles
+----------------------------------------------------
+CREATE MATERIALIZED VIEW IF NOT EXISTS klines_1d
+WITH (
+    timescaledb.continuous,
+    timescaledb.materialized_only = false
+) AS
 SELECT
     market,
-    time_bucket('1 day', timestamp) AS bucket,
+    time_bucket(INTERVAL '1 day', timestamp) AS bucket,
     first(price, timestamp) AS open,
     max(price) AS high,
     min(price) AS low,
@@ -51,12 +68,17 @@ FROM trades
 GROUP BY market, bucket
 WITH NO DATA;
 
--- 6. Create 1-Week Continuous Aggregate
-CREATE MATERIALIZED VIEW IF NOT EXISTS klines_1w 
-WITH (timescaledb.continuous) AS
+----------------------------------------------------
+-- 1 Week Candles
+----------------------------------------------------
+CREATE MATERIALIZED VIEW IF NOT EXISTS klines_1w
+WITH (
+    timescaledb.continuous,
+    timescaledb.materialized_only = false
+) AS
 SELECT
     market,
-    time_bucket('1 week', timestamp) AS bucket,
+    time_bucket(INTERVAL '1 week', timestamp) AS bucket,
     first(price, timestamp) AS open,
     max(price) AS high,
     min(price) AS low,
@@ -66,24 +88,34 @@ FROM trades
 GROUP BY market, bucket
 WITH NO DATA;
 
--- 7. Setup Automated Refresh Policies
--- (These will fail safely if the policy already exists)
-SELECT add_continuous_aggregate_policy('klines_1m',
-  start_offset => INTERVAL '1 hour',
-  end_offset => INTERVAL '0 seconds',
-  schedule_interval => INTERVAL '1 minute');
+----------------------------------------------------
+-- Refresh Policies
+----------------------------------------------------
 
-SELECT add_continuous_aggregate_policy('klines_1h',
-  start_offset => INTERVAL '2 days',
-  end_offset => INTERVAL '0 seconds',
-  schedule_interval => INTERVAL '5 minute');
-  
-SELECT add_continuous_aggregate_policy('klines_1d',
-  start_offset => INTERVAL '30 days',
-  end_offset => INTERVAL '0 seconds',
-  schedule_interval => INTERVAL '15 minutes');
+SELECT add_continuous_aggregate_policy(
+    'klines_1m',
+    start_offset => INTERVAL '1 hour',
+    end_offset => INTERVAL '1 minute',
+    schedule_interval => INTERVAL '1 minute'
+);
 
-SELECT add_continuous_aggregate_policy('klines_1w',
-  start_offset => INTERVAL '2 months',
-  end_offset => INTERVAL '0 seconds',
-  schedule_interval => INTERVAL '1 hour');
+SELECT add_continuous_aggregate_policy(
+    'klines_1h',
+    start_offset => INTERVAL '2 days',
+    end_offset => INTERVAL '1 hour',
+    schedule_interval => INTERVAL '5 minutes'
+);
+
+SELECT add_continuous_aggregate_policy(
+    'klines_1d',
+    start_offset => INTERVAL '30 days',
+    end_offset => INTERVAL '1 day',
+    schedule_interval => INTERVAL '15 minutes'
+);
+
+SELECT add_continuous_aggregate_policy(
+    'klines_1w',
+    start_offset => INTERVAL '6 months',
+    end_offset => INTERVAL '1 week',
+    schedule_interval => INTERVAL '1 hour'
+);

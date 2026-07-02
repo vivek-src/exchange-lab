@@ -3,7 +3,7 @@ import { Ticker } from "@exchange-lab/shared";
 export const BASE_URL =
   process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://localhost:3001";
 
-type EventType = "ticker" | "depth" | string;
+type EventType = "trade" | "depth" | string;
 type SubscriberId = string;
 type CallbackFunction = (data: any) => void;
 
@@ -51,13 +51,9 @@ export class MarketDataManager {
 
         let parsedPayload: any = null;
 
-        if (type === "ticker") {
+        if (type === "trade") {
           parsedPayload = {
-            lastPrice: message.data.c,
-            high: message.data.h,
-            low: message.data.l,
-            volume: message.data.v,
-            quoteVolume: message.data.V,
+            lastPrice: message.data.p,
             symbol: message.data.s,
           } as Partial<Ticker>;
         } else if (type === "depth") {
@@ -74,7 +70,6 @@ export class MarketDataManager {
         console.error("Error parsing WebSocket message:", error);
       }
     };
-
     this.ws.onclose = () => {
       console.warn("WebSocket disconnected. Attempting to reconnect...");
       // Simple auto-reconnect logic

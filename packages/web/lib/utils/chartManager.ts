@@ -7,6 +7,7 @@ import {
   ISeriesApi,
   Time,
   UTCTimestamp,
+  HistogramSeries,
 } from "lightweight-charts";
 
 export interface Candle {
@@ -15,6 +16,7 @@ export interface Candle {
   high: number;
   low: number;
   close: number;
+  volume: number; // Added volume property
 }
 
 export interface ChartTheme {
@@ -25,6 +27,7 @@ export interface ChartTheme {
 export class ChartManager {
   private chart: IChartApi;
   private candleSeries: ISeriesApi<"Candlestick", Time>;
+  private volumeSeries: ISeriesApi<"Histogram", Time>;
 
   constructor(
     container: HTMLElement,
@@ -32,7 +35,6 @@ export class ChartManager {
     theme: ChartTheme,
   ) {
     this.chart = createChart(container, {
-      // Automatically uses a ResizeObserver to fit the container
       autoSize: true,
 
       layout: {
@@ -41,33 +43,45 @@ export class ChartManager {
           color: theme.background,
         },
         textColor: theme.textColor,
+        fontSize: 11,
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       },
 
       crosshair: {
         mode: CrosshairMode.Normal,
-      },
-
-      grid: {
-        vertLines: { visible: false },
-        horzLines: { visible: false },
-      },
-
-      // --- PRICE SCALE (Y-Axis) ---
-      rightPriceScale: {
-        visible: true,
-        autoScale: true, // Automatically calculates highest high and lowest low
-        ticksVisible: true,
-        entireTextOnly: true,
-        borderVisible: true,
-        scaleMargins: {
-          top: 0.1, // Leaves a 10% visual padding at the top
-          bottom: 0.1, // Leaves a 10% visual padding at the bottom
+        // Pro Exchange style: clean dashed lines for tracking crosshairs
+        vertLine: {
+          width: 1,
+          color: "#4c525e",
+          style: 3,
+          labelBackgroundColor: "#2a2e39",
+        },
+        horzLine: {
+          width: 1,
+          color: "#4c525e",
+          style: 3,
+          labelBackgroundColor: "#2a2e39",
         },
       },
 
-      overlayPriceScales: {
-        ticksVisible: true,
+      // Soft grid lines provide context without cluttering up the dark canvas
+      grid: {
+        vertLines: { color: "#1e222d", style: 1 },
+        horzLines: { color: "#1e222d", style: 1 },
+      },
+
+      // Primary Y-Axis (Prices)
+      rightPriceScale: {
+        visible: true,
+        autoScale: true,
+        entireTextOnly: true,
         borderVisible: true,
+        borderColor: "#2a2e39",
+        scaleMargins: {
+          top: 0.1, // Leaves 10% safety space at the top
+          bottom: 0.22, // Leaves 22% room at the bottom so prices stay clear of volume bars
+        },
       },
 
       // --- TIME SCALE (X-Axis) ---
@@ -75,20 +89,21 @@ export class ChartManager {
         timeVisible: true,
         secondsVisible: false,
         borderVisible: true,
-        rightOffset: 5, // Leaves a small gap on the right side of the chart
-        fixLeftEdge: false,
+        borderColor: "#2a2e39",
+        // Increase rightOffset to leave a comfortable margin on the right side
+        rightOffset: 15,
+        fixLeftEdge: false, // Ensures we can scroll freely to the left
         fixRightEdge: false,
-        // Removed `barSpacing` and `minBarSpacing` to let the engine
-        // use its standard native default width (6 pixels) and handle zoom naturally.
       },
     });
 
+    // 1. Initialize Candlestick Series
     this.candleSeries = this.chart.addSeries(CandlestickSeries, {
-      upColor: "#22c55e",
-      downColor: "#ef4444",
+      upColor: "#26a69a", // Pro trading color palettes
+      downColor: "#ef5350",
       borderVisible: false,
-      wickUpColor: "#22c55e",
-      wickDownColor: "#ef4444",
+      wickUpColor: "#26a69a",
+      wickDownColor: "#ef5350",
       priceFormat: {
         type: "price",
         precision: 2,
@@ -96,32 +111,81 @@ export class ChartManager {
       },
     });
 
-    this.setData(initialData);
+    // 2. Initialize Volume Series (Targeting a dedicated independent scale)
+    this.volumeSeries = this.chart.addSeries(HistogramSeries, {
+      priceScaleId: "volume-pane", // Creates a decoupled custom scale coordinate system
+      priceFormat: {
+        type: "volume",
+      },
+    });
 
-    // Initial zoom to fit all data points perfectly on the screen
+    // Constrain volume bars strictly to the bottom 18% of the viewport area
+    this.chart.priceScale("volume-pane").applyOptions({
+      scaleMargins: {
+        top: 0.82,
+        bottom: 0,
+      },
+    });
+    // Initialize Volume Series
+    this.volumeSeries = this.chart.addSeries(HistogramSeries, {
+      priceScaleId: "volume-pane",
+      priceFormat: {
+        type: "volume",
+      },
+    });
+
+    // Lift the volume off the very bottom of the screen
+    this.chart.priceScale("volume-pane").applyOptions({
+      scaleMargins: {
+        top: 0.82,
+        bottom: 0.05, // Adds a 5% margin at the bottom so volume isn't glued to the dates
+      },
+    });
+
+    this.setData(initialData);
     this.chart.timeScale().fitContent();
   }
 
-  // Extracted logic to keep data transformations DRY
-  private transformCandle(candle: Candle) {
+  private transformData(candle: Candle) {
+    const time = Math.floor(candle.timestamp / 1000) as UTCTimestamp;
+    const isUpCandle = candle.close >= candle.open;
+
     return {
-      time: (candle.timestamp / 1000) as UTCTimestamp,
-      open: candle.open,
-      high: candle.high,
-      low: candle.low,
-      close: candle.close,
+      candlePoint: {
+        time,
+        open: candle.open,
+        high: candle.high,
+        low: candle.low,
+        close: candle.close,
+      },
+      volumePoint: {
+        time,
+        value: candle.volume,
+        color: isUpCandle
+          ? "rgba(38, 166, 154, 0.25)"
+          : "rgba(239, 83, 80, 0.25)", // Professional alpha translucency
+      },
     };
   }
 
   public setData(data: Candle[]) {
-    this.candleSeries.setData(
-      data.map((candle) => this.transformCandle(candle)),
-    );
+    const candleData: any[] = [];
+    const volumeData: any[] = [];
+
+    data.forEach((item) => {
+      const { candlePoint, volumePoint } = this.transformData(item);
+      candleData.push(candlePoint);
+      volumeData.push(volumePoint);
+    });
+
+    this.candleSeries.setData(candleData);
+    this.volumeSeries.setData(volumeData);
   }
 
-  // Reused the Candle interface here instead of CandleUpdate
   public update(candle: Candle) {
-    this.candleSeries.update(this.transformCandle(candle));
+    const { candlePoint, volumePoint } = this.transformData(candle);
+    this.candleSeries.update(candlePoint);
+    this.volumeSeries.update(volumePoint);
   }
 
   public fitContent() {
@@ -131,10 +195,7 @@ export class ChartManager {
   public applyTheme(theme: ChartTheme) {
     this.chart.applyOptions({
       layout: {
-        background: {
-          type: ColorType.Solid,
-          color: theme.background,
-        },
+        background: { type: ColorType.Solid, color: theme.background },
         textColor: theme.textColor,
       },
     });

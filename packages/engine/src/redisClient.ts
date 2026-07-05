@@ -3,33 +3,7 @@ import type { EngineResponse } from "@exchange-lab/shared";
 import { createClient } from "redis";
 import type { RedisClientType } from "redis";
 import type { WsMessage } from "@exchange-lab/shared";
-
-type DbMessage =
-  | {
-      type: typeof TRADE_ADDED;
-      data: {
-        id: string;
-        isBuyerMaker: boolean;
-        price: string;
-        quantity: string;
-        quoteQuantity: string;
-        timestamp: number;
-        market: string;
-        buyerId: string;
-        sellerId: string;
-      };
-    }
-  | {
-      type: typeof ORDER_UPDATE;
-      data: {
-        orderId: string;
-        executedQty: number;
-        market?: string;
-        price?: string;
-        quantity?: string;
-        side?: "buy" | "sell";
-      };
-    };
+import type { DbMessage } from "@exchange-lab/shared";
 
 export class RedisManager {
   private client: RedisClientType;

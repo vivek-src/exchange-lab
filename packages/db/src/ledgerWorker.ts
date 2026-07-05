@@ -118,7 +118,7 @@ async function main() {
             VALUES ($1, $2, 'DEBIT'::"TransactionType", 'ORDER_BUY'::"TransactionCategory", $3, $4, $5, $6, $7, $8, NOW())
           `,
             [
-              `tx_b_${id}`,
+              id,
               buyerId,
               `Bought ${quantity} ${baseAsset} @ ₹${price}`,
               quoteQuantity,

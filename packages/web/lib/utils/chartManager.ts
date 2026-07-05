@@ -43,6 +43,17 @@ export class ChartManager {
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       },
+      localization: {
+        locale: undefined, // uses browser locale, or set e.g. "en-IN"
+        timeFormatter: (time: UTCTimestamp) => {
+          return new Date(time * 1000).toLocaleString(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+            day: "2-digit",
+            month: "short",
+          });
+        },
+      },
       crosshair: {
         mode: CrosshairMode.Normal,
         vertLine: {
@@ -73,11 +84,13 @@ export class ChartManager {
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
-        borderVisible: true,
-        borderColor: "#2a2e39",
-        rightOffset: 15,
-        fixLeftEdge: false,
-        fixRightEdge: false,
+
+        tickMarkFormatter: (time: UTCTimestamp, tickMarkType, locale) => {
+          return new Date(time * 1000).toLocaleString(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        },
       },
     });
 
@@ -104,22 +117,8 @@ export class ChartManager {
   }
 
   private transformData(candle: Candle) {
-    const d = new Date(candle.timestamp);
+    const time = Math.floor(candle.timestamp / 1000) as UTCTimestamp;
 
-    // 2. Extract local time components and construct a fake UTC timestamp (seconds)
-    const localTimeAsUtc = Math.floor(
-      Date.UTC(
-        d.getFullYear(),
-        d.getMonth(),
-        d.getDate(),
-        d.getHours(),
-        d.getMinutes(),
-        d.getSeconds(),
-        d.getMilliseconds(),
-      ) / 1000,
-    ) as UTCTimestamp;
-
-    const time = localTimeAsUtc;
     const isUpCandle = candle.close >= candle.open;
 
     return {
@@ -156,6 +155,7 @@ export class ChartManager {
 
   public update(candle: Candle) {
     const { candlePoint, volumePoint } = this.transformData(candle);
+    console.log("series update time", candlePoint.time);
     this.candleSeries.update(candlePoint);
     this.volumeSeries.update(volumePoint);
   }

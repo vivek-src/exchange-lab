@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChartManager, Candle } from "@/lib/utils/chartManager";
 import { getKlines } from "@/lib/utils/apiClient";
 import { Button } from "@/components/ui/button";
+import { MarketDataManager } from "@/lib/utils/MarketDataManager";
 
 const INTERVALS = ["1m", "1h", "1d", "1w"] as const;
 type Interval = (typeof INTERVALS)[number];
@@ -107,34 +108,34 @@ export function TVChart({ market }: { market: string }) {
   // STEP 2: STREAM REAL-TIME DATA (WEBSOCKET)
 
   useEffect(() => {
-    // Only connect once historical data (and thus the chart) exists.
-    if (!chartManagerRef.current) return;
+    const manager = MarketDataManager.getInstance();
+    const callbackId = `CHART-${market}-${interval}`;
 
-    const ws = new WebSocket(WS_URL);
+    manager.registerCallback("trade", callbackId, (message: any) => {
+      // Check if the chart is ready INSIDE the callback
+      if (!chartManagerRef.current) {
+        console.log("WS message received, but chart not ready yet.");
+        return;
+      }
 
-    ws.onopen = () => {
-      ws.send(
-        JSON.stringify({
-          method: "SUBSCRIBE",
-          params: [`trade@${market}`],
-          id: 1,
-        }),
-      );
-    };
+      // 1. Extract the inner payload if it's wrapped
+      const payload = message.data ? message.data : message;
 
-    ws.onmessage = (event) => {
-      const { data } = JSON.parse(event.data);
-      if (!data || data.e !== "trade" || !chartManagerRef.current) return;
+      // 2. Access properties from the unwrapped payload
+      const tradePrice = Number(payload.p ?? payload.lastPrice);
+      const tradeVolume = Number(payload.q ?? 0);
+      const tradeTime = Number(payload.T ?? Date.now());
 
-      const tradePrice = parseFloat(data.p);
-      const tradeVolume = parseFloat(data.q);
-      const tradeTime = data.T || Date.now();
+      if (Number.isNaN(tradePrice)) {
+        console.warn("Invalid trade price received:", payload);
+        return;
+      }
+
       const intervalMs = INTERVAL_MS[interval];
 
-      // No candle yet (e.g. empty history) — seed one aligned to the
-      // interval boundary instead of silently dropping the trade.
       if (!lastCandleRef.current) {
         const bucketStart = Math.floor(tradeTime / intervalMs) * intervalMs;
+
         const seeded: Candle = {
           timestamp: bucketStart,
           open: tradePrice,
@@ -143,29 +144,27 @@ export function TVChart({ market }: { market: string }) {
           close: tradePrice,
           volume: tradeVolume,
         };
+
         lastCandleRef.current = seeded;
         chartManagerRef.current.update(seeded);
         return;
       }
 
-      const currentCandle = lastCandleRef.current;
-      let newCandle: Candle;
+      const current = lastCandleRef.current;
+      let candle: Candle;
 
-      if (tradeTime < currentCandle.timestamp + intervalMs) {
-        // Still in the same bucket — merge into it.
-        newCandle = {
-          ...currentCandle,
+      if (tradeTime < current.timestamp + intervalMs) {
+        candle = {
+          ...current,
           close: tradePrice,
-          high: Math.max(currentCandle.high, tradePrice),
-          low: Math.min(currentCandle.low, tradePrice),
-          volume: currentCandle.volume + tradeVolume,
+          high: Math.max(current.high, tradePrice),
+          low: Math.min(current.low, tradePrice),
+          volume: current.volume + tradeVolume,
         };
       } else {
-        // Bucket rolled over — start fresh, aligned to the actual
-        // boundary (not just +intervalMs), so we don't drift if a
-        // bucket was skipped entirely.
         const bucketStart = Math.floor(tradeTime / intervalMs) * intervalMs;
-        newCandle = {
+
+        candle = {
           timestamp: bucketStart,
           open: tradePrice,
           high: tradePrice,
@@ -175,11 +174,22 @@ export function TVChart({ market }: { market: string }) {
         };
       }
 
-      lastCandleRef.current = newCandle;
-      chartManagerRef.current.update(newCandle);
-    };
+      lastCandleRef.current = candle;
+      chartManagerRef.current.update(candle);
+    });
 
-    return () => ws.close();
+    manager.sendMessage({
+      method: "SUBSCRIBE",
+      params: [`trade@${market}`],
+    });
+
+    return () => {
+      manager.deRegisterCallback("trade", callbackId);
+      manager.sendMessage({
+        method: "UNSUBSCRIBE",
+        params: [`trade@${market}`],
+      });
+    };
   }, [market, interval]);
 
   return (

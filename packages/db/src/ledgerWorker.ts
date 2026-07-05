@@ -136,7 +136,7 @@ async function main() {
             VALUES ($1, $2, 'CREDIT'::"TransactionType", 'ORDER_SELL'::"TransactionCategory", $3, $4, $5, $6, $7, $8, NOW())
           `,
             [
-              `tx_s_${id}`,
+              id,
               sellerId,
               `Sold ${quantity} ${baseAsset} @ ₹${price}`,
               quoteQuantity,

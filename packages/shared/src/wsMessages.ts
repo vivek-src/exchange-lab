@@ -1,14 +1,14 @@
 export type TickerUpdateMessage = {
   stream: string;
   data: {
+    e: "ticker";
     c?: string;
     h?: string;
     l?: string;
     v?: string;
     V?: string;
     s?: string;
-    id: number;
-    e: "ticker";
+    id: bigint;
   };
 };
 
@@ -25,14 +25,14 @@ export type TradeAddedMessage = {
   stream: string;
   data: {
     e: "trade";
-    t: number;
-    m: boolean;
-    p: string;
-    q: string;
-    s: string;
+    t: bigint; // Trade ID
+    T: number; // Trade timestamp (epoch ms UTC)
+    m: boolean; // Is buyer maker
+    p: string; // Price
+    q: string; // Quantity
+    s: string; // Symbol
   };
 };
-
 export type WsMessage =
   | TickerUpdateMessage
   | DepthUpdateMessage

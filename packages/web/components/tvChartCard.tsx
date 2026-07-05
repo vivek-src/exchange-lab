@@ -8,7 +8,7 @@ type Interval = (typeof INTERVALS)[number];
 
 const LOOKBACK_MS: Record<Interval, number> = {
   "1m": 1000 * 60 * 60 * 24 * 3, // 3 days
-  "1h": 1000 * 60 * 60 * 24 * 7, // 7 days
+  "1h": 1000 * 60 * 60 * 24 * 21, // 7 days
   "1d": 1000 * 60 * 60 * 24 * 90, // 90 days
   "1w": 1000 * 60 * 60 * 24 * 365, // 1 year
 };

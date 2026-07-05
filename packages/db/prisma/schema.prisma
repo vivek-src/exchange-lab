@@ -106,12 +106,11 @@ model Trades {
   quantity      Decimal
   quoteQuantity Decimal
   isBuyerMaker  Boolean
-  timestamp     DateTime @default(now())
 
-  // Essential index for fast filtering
-  @@index([market, timestamp(sort: Desc)]) 
+  timestamp DateTime @default(now()) @db.Timestamptz(3)
 
-  // Composite key required by TimescaleDB partitioning
+  @@index([market, timestamp(sort: Desc)])
   @@id([id, timestamp])
+
   @@map("trades")
 }

@@ -82,11 +82,11 @@ export class ChartManager {
     });
 
     this.candleSeries = this.chart.addSeries(CandlestickSeries, {
-      upColor: "#26a69a",
-      downColor: "#ef5350",
-      borderVisible: false,
-      wickUpColor: "#26a69a",
-      wickDownColor: "#ef5350",
+      upColor: "#039d63",
+      downColor: "#ce484b",
+      borderVisible: true,
+      wickUpColor: "#039d63",
+      wickDownColor: "#ce484b",
       priceFormat: { type: "price", precision: 2, minMove: 0.01 },
     });
 
@@ -104,7 +104,22 @@ export class ChartManager {
   }
 
   private transformData(candle: Candle) {
-    const time = Math.floor(candle.timestamp / 1000) as UTCTimestamp;
+    const d = new Date(candle.timestamp);
+
+    // 2. Extract local time components and construct a fake UTC timestamp (seconds)
+    const localTimeAsUtc = Math.floor(
+      Date.UTC(
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate(),
+        d.getHours(),
+        d.getMinutes(),
+        d.getSeconds(),
+        d.getMilliseconds(),
+      ) / 1000,
+    ) as UTCTimestamp;
+
+    const time = localTimeAsUtc;
     const isUpCandle = candle.close >= candle.open;
 
     return {

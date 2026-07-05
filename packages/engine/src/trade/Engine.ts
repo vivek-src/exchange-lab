@@ -574,13 +574,16 @@ export class Engine {
     }
   }
   publishWsTrades(fills: Fill[], market: string, side: "buy" | "sell") {
+    const timestamp = Date.now();
+
     for (const fill of fills) {
       RedisManager.getInstance().publishMessage(`trade@${market}`, {
         stream: `trade@${market}`,
         data: {
           e: "trade",
-          t: fill.tradeId,
-          m: side === "sell",
+          t: fill.tradeId, // trade id
+          T: timestamp, // event timestamp
+          m: side === "sell", // buyer is maker
           p: fill.price.toString(),
           q: fill.qty.toString(),
           s: market,

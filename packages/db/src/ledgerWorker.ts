@@ -118,7 +118,7 @@ async function main() {
             VALUES ($1, $2, 'DEBIT'::"TransactionType", 'ORDER_BUY'::"TransactionCategory", $3, $4, $5, $6, $7, $8, NOW())
           `,
             [
-              id,
+              `tx_b_${id}`,
               buyerId,
               `Bought ${quantity} ${baseAsset} @ ₹${price}`,
               quoteQuantity,
@@ -136,7 +136,7 @@ async function main() {
             VALUES ($1, $2, 'CREDIT'::"TransactionType", 'ORDER_SELL'::"TransactionCategory", $3, $4, $5, $6, $7, $8, NOW())
           `,
             [
-              id,
+              `tx_s_${id}`,
               sellerId,
               `Sold ${quantity} ${baseAsset} @ ₹${price}`,
               quoteQuantity,

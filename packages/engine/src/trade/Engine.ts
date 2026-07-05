@@ -8,7 +8,6 @@ import {
   ORDER_UPDATE,
   TRADE_ADDED,
 } from "@exchange-lab/shared";
-import { randomUUID } from "crypto";
 import {
   CANCEL_ORDER,
   CREATE_ORDER,
@@ -19,6 +18,7 @@ import {
 import type { EngineRequest } from "@exchange-lab/shared";
 import { Orderbook } from "./Orderbook.js";
 import type { Fill, Order } from "./Orderbook.js";
+import { Snowflake } from "./Snowflake.js";
 
 interface UserBalance {
   [key: string]: {
@@ -28,6 +28,7 @@ interface UserBalance {
 }
 export const BASE_CURRENCY = "INR";
 export const SUPPORTED_ASSETS = ["RIL", "TATA", "VIVEK"];
+export const snowflake = new Snowflake(1);
 
 export class Engine {
   private orderbooks: Orderbook[] = [];
@@ -46,19 +47,12 @@ export class Engine {
     if (snapshot) {
       const snapshotSnapshot = JSON.parse(snapshot.toString());
       this.orderbooks = snapshotSnapshot.orderbooks.map(
-        (o: any) =>
-          new Orderbook(
-            o.baseAsset,
-            o.bids,
-            o.asks,
-            o.lastTradeId,
-            o.currentPrice,
-          ),
+        (o: any) => new Orderbook(o.baseAsset, o.bids, o.asks, o.currentPrice),
       );
       this.balances = new Map(snapshotSnapshot.balances);
     } else {
       this.orderbooks = SUPPORTED_ASSETS.map(
-        (asset) => new Orderbook(asset, [], [], 0, 0),
+        (asset) => new Orderbook(asset, [], [], 0),
       );
     }
     setInterval(() => {
@@ -68,7 +62,7 @@ export class Engine {
   process({ message, clientId }: { message: EngineRequest; clientId: string }) {
     switch (message.type) {
       case CREATE_ORDER:
-        const newOrderId = randomUUID();
+        const newOrderId = snowflake.generate();
         try {
           const { executedQty, fills } = this.createOrder(
             message.data.market,
@@ -316,7 +310,7 @@ export class Engine {
     quantity: string,
     side: "buy" | "sell",
     userId: string,
-    newOrderId: string,
+    newOrderId: bigint,
   ) {
     const orderbook = this.orderbooks.find(
       (orderbook) => orderbook.ticker() === market,

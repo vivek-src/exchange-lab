@@ -59,8 +59,8 @@ export class ChartManager {
         },
       },
       grid: {
-        vertLines: { color: "#1e222d", style: 1 },
-        horzLines: { color: "#1e222d", style: 1 },
+        horzLines: { color: "#2d2e33", style: 2 },
+        vertLines: { color: "#2d2e33", style: 2 },
       },
       rightPriceScale: {
         visible: true,

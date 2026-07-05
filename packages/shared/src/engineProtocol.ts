@@ -28,7 +28,7 @@ export type EngineRequest =
   | {
       type: typeof CANCEL_ORDER;
       data: {
-        orderId: bigint;
+        orderId: string;
         market: string;
       };
     }
@@ -74,19 +74,19 @@ export type EngineResponse =
   | {
       type: typeof ORDER_PLACED;
       payload: {
-        orderId: bigint;
+        orderId: string;
         executedQty: number;
         fills: {
           price: string;
           qty: number;
-          tradeId: bigint;
+          tradeId: string;
         }[];
       };
     }
   | {
       type: typeof ORDER_CANCELLED;
       payload: {
-        orderId: bigint;
+        orderId: string;
         executedQty: number;
         remainingQty: number;
         error?: string;
@@ -95,7 +95,7 @@ export type EngineResponse =
   | {
       type: typeof OPEN_ORDERS;
       payload: {
-        orderId: bigint;
+        orderId: string;
         executedQty: number;
         price: string;
         quantity: string;

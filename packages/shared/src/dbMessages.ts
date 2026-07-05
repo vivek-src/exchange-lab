@@ -16,7 +16,7 @@ export type DbMessage =
   | {
       type: "ORDER_UPDATE";
       data: {
-        orderId: bigint;
+        orderId: string;
         executedQty: number;
         market?: string;
         price?: string;

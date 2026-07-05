@@ -8,7 +8,7 @@ export type TickerUpdateMessage = {
     v?: string;
     V?: string;
     s?: string;
-    id: bigint;
+    id: string;
   };
 };
 
@@ -25,7 +25,7 @@ export type TradeAddedMessage = {
   stream: string;
   data: {
     e: "trade";
-    t: bigint; // Trade ID
+    t: string; // Trade ID
     T: number; // Trade timestamp (epoch ms UTC)
     m: boolean; // Is buyer maker
     p: string; // Price

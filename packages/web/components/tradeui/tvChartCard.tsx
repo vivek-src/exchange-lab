@@ -193,7 +193,8 @@ export function TVChart({ market }: { market: string }) {
   }, [market, interval]);
 
   return (
-    <div className="flex flex-col h-full w-full bg-card rounded-lg overflow-hidden min-h-0">
+    // <div className="flex flex-col h-full w-full bg-card rounded-lg overflow-hidden min-h-0">
+    <div className="flex h-full w-full min-h-0 min-w-0 flex-col overflow-hidden rounded-lg bg-card">
       <div className="flex items-center justify-between px-4 py-2 border-b border-border">
         <div className="flex gap-1">
           {INTERVALS.map((iv) => (

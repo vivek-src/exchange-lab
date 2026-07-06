@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import type { Ticker } from "@exchange-lab/shared";
 import { getTicker } from "@/lib/utils/apiClient";
@@ -68,40 +69,38 @@ export const MarketBar = ({ market }: { market: string }) => {
           : "text-red-500";
 
   return (
-    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex items-center gap-6">
-            {/* Pair */}
-            <MarketDisplay market={market} />
+    <div className="h-full w-full flex items-center">
+      <ScrollArea className="w-full whitespace-nowrap">
+        <div className="flex h-full w-full items-center gap-4 px-2 lg:gap-6 lg:px-4">
+          {/* Pair */}
+          <MarketDisplay market={market} />
 
-            <Separator orientation="vertical" className="h-10" />
+          <Separator orientation="vertical" className="h-8 bg-border/40" />
 
-            {/* Price */}
-            <div className="flex shrink-0 flex-col">
-              <span
-                className={`text-2xl font-bold tabular-nums transition-colors duration-300 ${trendColor}`}>
-                ${ticker?.lastPrice ?? "--"}
-              </span>
+          {/* Price */}
+          <div className="flex shrink-0 flex-col justify-center">
+            <span
+              className={`text-lg font-bold tabular-nums leading-tight transition-colors duration-300 ${trendColor}`}>
+              ${ticker?.lastPrice ?? "--"}
+            </span>
 
-              <span className={`text-sm tabular-nums ${trendColor}`}>
-                {priceChangeNum >= 0 ? "+" : ""}
-                {ticker?.priceChange ?? "0.00"} (
-                {Number(ticker?.priceChangePercent ?? 0).toFixed(2)}%)
-              </span>
-            </div>
-
-            <Separator orientation="vertical" className="h-10" />
-
-            {/* Metrics */}
-            <Metric label="24H High" value={ticker?.high ?? "--"} />
-            <Metric label="24H Low" value={ticker?.low ?? "--"} />
-            <Metric label="Volume" value={ticker?.volume ?? "--"} />
+            <span className={`text-xs tabular-nums leading-none ${trendColor}`}>
+              {priceChangeNum >= 0 ? "+" : ""}
+              {ticker?.priceChange ?? "0.00"} (
+              {Number(ticker?.priceChangePercent ?? 0).toFixed(2)}%)
+            </span>
           </div>
 
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-      </div>
+          <Separator orientation="vertical" className="h-8 bg-border/40" />
+
+          {/* Metrics */}
+          <Metric label="24H High" value={ticker?.high ?? "--"} />
+          <Metric label="24H Low" value={ticker?.low ?? "--"} />
+          <Metric label="Volume" value={ticker?.volume ?? "--"} />
+        </div>
+
+        <ScrollBar orientation="horizontal" className="invisible" />
+      </ScrollArea>
     </div>
   );
 };
@@ -111,20 +110,23 @@ function MarketDisplay({ market }: { market: string }) {
 
   return (
     <div className="flex shrink-0 items-baseline gap-1">
-      <span className="text-xl font-semibold tracking-tight">{baseAsset}</span>
-
+      <span className="text-lg font-semibold tracking-tight">{baseAsset}</span>
       {quoteAsset && (
-        <span className="text-sm text-muted-foreground">/{quoteAsset}</span>
+        <span className="text-xs text-muted-foreground">/{quoteAsset}</span>
       )}
     </div>
   );
 }
+
 function Metric({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex min-w-[90px] flex-col">
-      <span className="text-xs text-muted-foreground">{label}</span>
-
-      <span className="font-medium tabular-nums">{value}</span>
+    <div className="flex min-w-[80px] flex-col justify-center">
+      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+        {label}
+      </span>
+      <span className="text-sm font-medium tabular-nums leading-tight">
+        {value}
+      </span>
     </div>
   );
 }

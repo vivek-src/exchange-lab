@@ -10,27 +10,34 @@ const CONFIG: Record<string, { table: string; ms: number }> = {
   "1w": { table: "klines_1w", ms: 604_800_000 },
 };
 
+// Default lookback window per interval when the client doesn't pass
+// startTime/endTime explicitly (roughly: enough candles to fill a chart).
+const DEFAULT_LOOKBACK_BUCKETS = 500;
+
 klineRouter.get("/", async (req, res) => {
   try {
     const { symbol, interval, startTime, endTime } = req.query;
-
     const config = CONFIG[interval as string];
 
     if (!symbol || typeof symbol !== "string" || !config) {
-      return res.status(400).json({
-        error: "Valid symbol and interval required",
-      });
+      return res
+        .status(400)
+        .json({ error: "Valid symbol and interval required" });
     }
 
     const endMs = endTime ? Number(endTime) : Date.now();
-    const startMs = startTime ? Number(startTime) : endMs - config.ms * 1000;
+    const startMs = startTime
+      ? Number(startTime)
+      : endMs - config.ms * DEFAULT_LOOKBACK_BUCKETS;
 
     if (Number.isNaN(startMs) || Number.isNaN(endMs) || startMs >= endMs) {
-      return res.status(400).json({
-        error: "Invalid time range parameters",
-      });
+      return res.status(400).json({ error: "Invalid time range parameters" });
     }
 
+    // config.table is selected from the fixed CONFIG map above (never
+    // built from req input directly), so this interpolation is safe
+    // from SQL injection despite using $queryRawUnsafe.
+    //
     // IMPORTANT: compute epoch seconds in SQL via EXTRACT(EPOCH ...).
     // Never let the pg driver hand back a `timestamp without time zone`
     // as a JS Date — it interprets it in the server's LOCAL timezone,
@@ -52,12 +59,13 @@ klineRouter.get("/", async (req, res) => {
       endMs,
     );
 
-    // Dedupe defensively (in case of overlapping refetches) and
-    // guarantee strictly ascending unique seconds for the chart lib.
+    // Dedupe defensively (overlapping refetches) and guarantee strictly
+    // ascending unique seconds — lightweight-charts silently refuses to
+    // render otherwise.
     const seen = new Set<number>();
     const klines = rows
       .map((row) => ({
-        time: Math.floor(Number(row.time_sec)), // whole unix seconds
+        time: Math.floor(Number(row.time_sec)),
         open: Number(row.open),
         high: Number(row.high),
         low: Number(row.low),
@@ -74,9 +82,6 @@ klineRouter.get("/", async (req, res) => {
     return res.json(klines);
   } catch (error) {
     console.error("Kline API Error:", error);
-
-    return res.status(500).json({
-      error: "Failed to fetch market data",
-    });
+    return res.status(500).json({ error: "Failed to fetch market data" });
   }
 });

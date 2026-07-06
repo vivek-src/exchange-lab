@@ -1,119 +1,103 @@
-// app/trade/[market]/page.tsx
 "use client";
-import { useParams } from "next/navigation";
-import { MarketBar } from "@/components/marketBar";
-import { TVChart } from "@/components/tvChartCard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 
-export default function TradeDashboard() {
+import { useParams } from "next/navigation";
+import { ReactNode, useState } from "react";
+
+import { MarketBar } from "@/components/tradeui/marketBar";
+import { TVChart } from "@/components/tradeui/tvChartCard";
+import { OrderBook } from "@/components/tradeui/orderBook";
+import { OrderEntry } from "@/components/tradeui/orderEntry";
+
+export default function TradePage() {
   const params = useParams();
   const market = params?.market;
 
+  // Custom state to track the active view
+  const [activeView, setActiveView] = useState<"book" | "trades">("book");
+
   if (!market || typeof market !== "string") {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-background text-muted-foreground">
-        Loading market data...
+      <div className="flex h-screen items-center justify-center bg-[#0a0a0a] text-white">
+        Loading market...
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-full flex-col bg-background p-2 gap-2 text-foreground overflow-hidden font-sans">
-      {/* 1. Top Navigation Panel */}
-      <div className="flex-none bg-card border border-border rounded-lg shadow-sm">
+    <div className="flex h-[100dvh] flex-col gap-2 bg-[#0a0a0a] p-2 lg:gap-3 lg:p-3">
+      {/* Top Market Info */}
+      <header className="relative z-10 h-14 shrink-0 rounded-xl border border-border/40 bg-[#121212] px-2">
         <MarketBar market={market} />
-      </div>
+      </header>
 
-      {/* 2. Main Workspace - 3 Distinct Columns */}
-      <div className="flex flex-1 gap-2 min-h-0 overflow-hidden">
-        {/* COLUMN 1: Chart (Flex-1 allows it to fill space) */}
-        <div className="flex flex-1 flex-col bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-          <TVChart market={market} />
-        </div>
-
-        {/* COLUMN 2: Orderbook (20% Width)           */}
-        <div className="flex w-[20%] flex-col border-r border-border bg-background p-2">
-          {/* We moved the border and rounded corners up to this wrapper div */}
-          <div className="flex flex-1 flex-col border border-border rounded-md p-2 bg-card shadow-sm">
-            <Tabs
-              defaultValue="orderbook"
-              className="w-full h-full flex flex-col">
-              <TabsList className="w-full bg-muted grid grid-cols-2">
-                <TabsTrigger value="orderbook" className="text-xs">
-                  Orderbook
-                </TabsTrigger>
-                <TabsTrigger value="trades" className="text-xs">
-                  Recent Trades
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Removed the border from TabsContent so it blends seamlessly */}
-              <TabsContent
-                value="orderbook"
-                className="flex-1 mt-2 text-sm text-muted-foreground flex items-center justify-center">
-                Orderbook Component
-              </TabsContent>
-
-              <TabsContent
-                value="trades"
-                className="flex-1 mt-2 text-sm text-muted-foreground flex items-center justify-center">
-                Trades Component
-              </TabsContent>
-            </Tabs>
+      {/* Unified Layout */}
+      <main className="flex flex-col lg:flex-row flex-1 gap-2 lg:gap-3 overflow-y-auto lg:min-h-0 lg:overflow-hidden">
+        {/* Chart */}
+        <Panel className="relative flex-1 min-h-[45vh] lg:min-h-0 lg:min-w-0 overflow-hidden order-1">
+          <div className="relative flex-1 min-h-0 min-w-0">
+            <TVChart market={market} />
           </div>
-        </div>
-        {/* COLUMN 3: Order Entry (Fixed Width ~320px) */}
-        <div className="flex w-[320px] flex-col bg-card border border-border rounded-lg shadow-sm p-3">
-          <div className="flex bg-muted p-1 rounded-md mb-4">
-            <Button
-              variant="default"
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-sm">
-              Buy
-            </Button>
-            <Button
-              variant="ghost"
-              className="flex-1 text-muted-foreground hover:text-foreground h-8 text-sm">
-              Sell
-            </Button>
+        </Panel>
+
+        {/* Custom Tabbed Panel for Order Book & Trades */}
+        <Panel className="w-full lg:w-[320px] h-[400px] lg:h-auto shrink-0 overflow-hidden order-3 lg:order-2">
+          <div className="flex h-12 w-full shrink-0 items-center justify-start gap-6 border-b border-border/40 px-4">
+            <button
+              onClick={() => setActiveView("book")}
+              className={`relative flex h-full items-center text-sm font-medium transition-colors focus:outline-none ${
+                activeView === "book"
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}>
+              Order Book
+              {activeView === "book" && (
+                <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-foreground" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveView("trades")}
+              className={`relative flex h-full items-center text-sm font-medium transition-colors focus:outline-none ${
+                activeView === "trades"
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}>
+              Trades
+              {activeView === "trades" && (
+                <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-foreground" />
+              )}
+            </button>
           </div>
 
-          <Tabs defaultValue="limit" className="w-full">
-            <TabsList className="w-full bg-transparent justify-start gap-4 p-0 mb-4 h-auto">
-              <TabsTrigger
-                value="limit"
-                className="text-xs p-0 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-                Limit
-              </TabsTrigger>
-              <TabsTrigger
-                value="market"
-                className="text-xs p-0 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-                Market
-              </TabsTrigger>
-              <TabsTrigger
-                value="conditional"
-                className="text-xs p-0 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground">
-                Conditional
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent
-              value="limit"
-              className="flex flex-col gap-4 text-sm text-muted-foreground">
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span>Balance</span>
-                  <span>-</span>
-                </div>
-                <div className="bg-background border border-border rounded p-2 text-right">
-                  0.00
-                </div>
+          {/* Tab Content Area */}
+          <div className="flex flex-1 min-h-0 flex-col overflow-hidden bg-transparent">
+            {activeView === "book" ? (
+              <OrderBook market={market} />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center text-sm text-muted-foreground">
+                Recent Trades Component
               </div>
-              <Button className="w-full font-semibold">Sign up to trade</Button>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+            )}
+          </div>
+        </Panel>
+
+        {/* Order Entry */}
+        <Panel className="w-full lg:w-[320px] shrink-0 overflow-y-auto p-4 order-2 lg:order-3">
+          <OrderEntry market={market} />
+        </Panel>
+      </main>
     </div>
   );
 }
+const Panel = ({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <section
+    className={`flex flex-col rounded-xl border border-border/40 bg-[#121212] ${className}`}>
+    {children}
+  </section>
+);

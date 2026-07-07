@@ -1,6 +1,6 @@
 import { BASE_CURRENCY } from "@exchange-lab/shared";
 import { Snowflake } from "./Snowflake.js";
-export const snowflake = new Snowflake(1);
+const snowflake = new Snowflake(1);
 export interface Order {
   price: number;
   quantity: number;

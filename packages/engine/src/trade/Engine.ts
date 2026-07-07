@@ -29,7 +29,7 @@ interface UserBalance {
 
 export const BASE_CURRENCY = "INR";
 export const SUPPORTED_ASSETS = ["RIL", "TATA", "VIVEK"];
-export const snowflake = new Snowflake(1);
+const snowflake = new Snowflake(1);
 
 // --- Small shared helpers -------------------------------------------------
 

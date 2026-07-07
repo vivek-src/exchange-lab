@@ -6,12 +6,15 @@
   "author": "vivek",
   "type": "module",
   "main": "index.js",
+  "exports": {
+    ".": "./dist/trade/Snowflake.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@exchange-lab/db": "*",
     "@exchange-lab/api": "*",
+    "@exchange-lab/db": "*",
     "@types/redis": "^4.0.10"
   }
 }

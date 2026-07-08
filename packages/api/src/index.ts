@@ -25,5 +25,5 @@ app.use("/api/v1/tickers", tickersRouter);
 app.use("/api/v1/newuser", pingEngine);
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}...`);
 });

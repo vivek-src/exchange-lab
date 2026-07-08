@@ -79,7 +79,7 @@ export type EngineResponse =
         fills: {
           price: string;
           qty: number;
-          tradeId: number;
+          tradeId: string;
         }[];
       };
     }

@@ -1,7 +1,8 @@
 import { createClient } from "redis";
 import type { RedisClientType } from "redis";
-import { randomUUID } from "crypto";
 import type { EngineResponse, EngineRequest } from "@exchange-lab/shared";
+import { Snowflake } from "@exchange-lab/engine";
+const snowflake = new Snowflake(1);
 
 export class EngineClient {
   private client: RedisClientType;
@@ -22,7 +23,7 @@ export class EngineClient {
   }
   public sendRequest(message: EngineRequest) {
     return new Promise<EngineResponse>((resolve, reject) => {
-      const id = randomUUID();
+      const id = snowflake.generate().toString();
 
       const timeout = setTimeout(() => {
         this.client.unsubscribe(id);

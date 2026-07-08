@@ -1,39 +1,38 @@
 import { BASE_CURRENCY } from "@exchange-lab/shared";
+import { Snowflake } from "./Snowflake.js";
+const snowflake = new Snowflake(1);
 export interface Order {
   price: number;
   quantity: number;
-  orderId: string;
+  orderId: bigint;
   filled: number;
   side: "buy" | "sell";
   userId: string;
 }
 
 export interface Fill {
-  tradeId: number; //Limited to max number value
+  tradeId: bigint;
   price: number;
   qty: number;
   otherUserId: string;
-  makerOrderId: string;
+  makerOrderId: bigint;
 }
 export class Orderbook {
   bids: Order[];
   asks: Order[];
   baseAsset: string;
   quoteAsset: string = BASE_CURRENCY;
-  lastTradeId: number;
   currentPrice: number;
 
   constructor(
     baseAsset: string,
     bids: Order[],
     asks: Order[],
-    lastTradeId: number,
     currentPrice: number,
   ) {
     this.bids = bids;
     this.asks = asks;
     this.baseAsset = baseAsset;
-    this.lastTradeId = lastTradeId || 0;
     this.currentPrice = currentPrice || 0;
   }
   ticker() {
@@ -96,7 +95,7 @@ export class Orderbook {
       fills.push({
         price: ask.price,
         qty: filledQty,
-        tradeId: this.lastTradeId++,
+        tradeId: snowflake.generate(),
         otherUserId: ask.userId,
         makerOrderId: ask.orderId,
       });
@@ -139,7 +138,7 @@ export class Orderbook {
       fills.push({
         price: bid.price,
         qty: filledQty,
-        tradeId: this.lastTradeId++,
+        tradeId: snowflake.generate(),
         otherUserId: bid.userId,
         makerOrderId: bid.orderId,
       });

@@ -37,7 +37,6 @@ export class MarketDataManager {
         if (msg) this.ws?.send(JSON.stringify(msg));
       }
     };
-
     this.ws.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
@@ -53,8 +52,13 @@ export class MarketDataManager {
 
         if (type === "trade") {
           parsedPayload = {
+            id: message.data.t,
             lastPrice: message.data.p,
             symbol: message.data.s,
+            price: message.data.p,
+            quantity: message.data.q,
+            isBuyerMaker: message.data.m,
+            timestamp: message.data.T,
           } as Partial<Ticker>;
         } else if (type === "depth") {
           parsedPayload = {
@@ -70,6 +74,38 @@ export class MarketDataManager {
         console.error("Error parsing WebSocket message:", error);
       }
     };
+    // this.ws.onmessage = (event) => {
+    //   try {
+    //     const message = JSON.parse(event.data);
+
+    //     if (!message?.data?.e) return;
+
+    //     const type = message.data.e as EventType;
+    //     const typeCallbacks = this.callbacks.get(type);
+
+    //     if (!typeCallbacks || typeCallbacks.size === 0) return;
+
+    //     let parsedPayload: any = null;
+
+    //     if (type === "trade") {
+    //       parsedPayload = {
+    //         lastPrice: message.data.p,
+    //         symbol: message.data.s,
+    //       } as Partial<Ticker>;
+    //     } else if (type === "depth") {
+    //       parsedPayload = {
+    //         bids: message.data.b,
+    //         asks: message.data.a,
+    //       };
+    //     }
+
+    //     if (parsedPayload) {
+    //       typeCallbacks.forEach((callback) => callback(parsedPayload));
+    //     }
+    //   } catch (error) {
+    //     console.error("Error parsing WebSocket message:", error);
+    //   }
+    // };
     this.ws.onclose = () => {
       console.warn("WebSocket disconnected. Attempting to reconnect...");
       // Simple auto-reconnect logic

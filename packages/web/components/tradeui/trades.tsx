@@ -1,35 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getTrades } from "@/lib/utils/apiClient";
+import { useEffect, useRef, useState } from "react";
 import type { Trade } from "@exchange-lab/shared";
+import { getTrades } from "@/lib/utils/apiClient";
+import { MarketDataManager } from "@/lib/utils/MarketDataManager";
 
-interface TradesListProps {
+export function TradesList({
+  market,
+  limit = 50,
+}: {
   market: string;
   limit?: number;
-}
-
-export function TradesList({ market, limit = 50 }: TradesListProps) {
+}) {
   const [trades, setTrades] = useState<Trade[]>([]);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
-    let cancelled = false;
+    isMountedRef.current = true;
 
-    async function load() {
-      try {
-        const data = await getTrades(market, limit);
-        if (!cancelled) setTrades(data);
-      } catch (err) {
-        console.error(err);
-      }
-    }
+    getTrades(market, limit)
+      .then((data) => {
+        if (isMountedRef.current) setTrades(data);
+      })
+      .catch((err) =>
+        console.error(`Failed to fetch trades for ${market}:`, err),
+      );
 
-    load();
-    const interval = setInterval(load, 2000);
+    const manager = MarketDataManager.getInstance();
+    const callbackId = `TRADES-${market}`;
+
+    manager.registerCallback("trade", callbackId, (payload: any) => {
+      if (!isMountedRef.current) return;
+      if (payload.symbol && payload.symbol !== market) return;
+
+      setTrades((prev) => [payload.data, ...prev].slice(0, limit));
+    });
+
+    manager.sendMessage({
+      method: "SUBSCRIBE",
+      params: [`trade@${market}`],
+    });
 
     return () => {
-      cancelled = true;
-      clearInterval(interval);
+      isMountedRef.current = false;
+      manager.deRegisterCallback("trade", callbackId);
+      manager.sendMessage({
+        method: "UNSUBSCRIBE",
+        params: [`trade@${market}`],
+      });
     };
   }, [market, limit]);
 
@@ -41,9 +59,9 @@ export function TradesList({ market, limit = 50 }: TradesListProps) {
         <span className="text-right">Time</span>
       </div>
       <div className="flex-1 overflow-y-auto">
-        {trades.map((trade) => (
+        {trades.map((trade, i) => (
           <div
-            key={trade.id}
+            key={trade.id ?? i}
             className="grid grid-cols-3 text-xs px-3 py-1.5 hover:bg-white/5">
             <span
               className={

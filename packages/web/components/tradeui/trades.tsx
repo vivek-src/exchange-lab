@@ -31,9 +31,21 @@ export function TradesList({
 
     manager.registerCallback("trade", callbackId, (payload: any) => {
       if (!isMountedRef.current) return;
-      if (payload.symbol && payload.symbol !== market) return;
+      if (payload.symbol !== market) return;
 
-      setTrades((prev) => [payload.data, ...prev].slice(0, limit));
+      const trade: Trade = {
+        id: payload.id,
+        market: payload.symbol,
+        price: payload.price,
+        quantity: payload.quantity,
+        quoteQuantity: (
+          Number(payload.price) * Number(payload.quantity)
+        ).toString(),
+        isBuyerMaker: payload.isBuyerMaker,
+        timestamp: payload.timestamp,
+      };
+
+      setTrades((prev) => [trade, ...prev].slice(0, limit));
     });
 
     manager.sendMessage({
@@ -73,7 +85,7 @@ export function TradesList({
               {Number(trade.quantity).toFixed(4)}
             </span>
             <span className="text-right text-muted-foreground">
-              {new Date(trade.timestamp).toLocaleTimeString()}
+              {new Date(Number(trade.timestamp)).toLocaleTimeString()}
             </span>
           </div>
         ))}

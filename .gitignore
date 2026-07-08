@@ -84,3 +84,6 @@ temp/
 # ===============================
 *.swp
 *.swo
+
+#Engine Snapshots
+snapshot.json

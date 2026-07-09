@@ -37,17 +37,21 @@ export async function getTicker(market: string): Promise<Ticker> {
 export async function getDepth(market: string): Promise<Depth> {
   const { data } = await api.get<Depth>("/depth", {
     params: {
-      symbol: market,
+      market,
     },
   });
 
   return data;
 }
 
-export async function getTrades(market: string): Promise<Trade[]> {
+export async function getTrades(
+  market: string,
+  limit: number,
+): Promise<Trade[]> {
   const { data } = await api.get<Trade[]>("/trades", {
     params: {
-      symbol: market,
+      market,
+      limit,
     },
   });
 

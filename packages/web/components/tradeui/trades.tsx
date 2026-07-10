@@ -77,7 +77,7 @@ export function TradesList({
             className="grid grid-cols-3 text-xs px-3 py-1.5 hover:bg-white/5">
             <span
               className={
-                trade.isBuyerMaker ? "text-red-500" : "text-green-500"
+                trade.isBuyerMaker ? "text-red-400" : "text-emerald-400"
               }>
               {Number(trade.price).toFixed(2)}
             </span>

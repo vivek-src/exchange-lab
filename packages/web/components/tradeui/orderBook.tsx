@@ -28,6 +28,8 @@ function mergeLevels(existing: Level[], updates: Level[]): Level[] {
 export function OrderBook({ market }: { market: string }) {
   const [depth, setDepth] = useState<DepthPayload | null>(null);
   const [lastPrice, setLastPrice] = useState<number | null>(null);
+  const [trend, setTrend] = useState<"up" | "down" | "flat">("flat");
+  const lastPriceRef = useRef<number | null>(null);
 
   // Tracks whether the initial REST snapshot has landed yet, and buffers
   // any ws updates that arrive before it does so nothing gets dropped.
@@ -38,10 +40,13 @@ export function OrderBook({ market }: { market: string }) {
     let isMounted = true;
     const manager = MarketDataManager.getInstance();
     const subscriberId = `orderbook-${market}`;
-    const stream = `depth@${market}`;
+    const depthStream = `depth@${market}`;
+    const tradeStream = `trade@${market}`;
 
     setDepth(null);
     setLastPrice(null);
+    setTrend("flat");
+    lastPriceRef.current = null;
     snapshotReadyRef.current = false;
     pendingUpdatesRef.current = [];
 
@@ -69,9 +74,28 @@ export function OrderBook({ market }: { market: string }) {
       },
     );
 
+    manager.registerCallback(
+      "trade",
+      subscriberId,
+      (payload: { symbol?: string; lastPrice?: string }) => {
+        if (payload.symbol && payload.symbol !== market) return;
+
+        const newPrice = Number(payload.lastPrice);
+        if (Number.isNaN(newPrice)) return;
+
+        if (lastPriceRef.current !== null) {
+          if (newPrice > lastPriceRef.current) setTrend("up");
+          else if (newPrice < lastPriceRef.current) setTrend("down");
+        }
+        lastPriceRef.current = newPrice;
+        setLastPrice(newPrice);
+      },
+    );
+
     // Adjust this shape to whatever your backend actually expects for
     // subscribing — this mirrors the "depth@{market}" naming you described.
-    manager.sendMessage({ method: "SUBSCRIBE", params: [stream] });
+    manager.sendMessage({ method: "SUBSCRIBE", params: [depthStream] });
+    manager.sendMessage({ method: "SUBSCRIBE", params: [tradeStream] });
 
     async function loadSnapshot() {
       try {
@@ -83,7 +107,11 @@ export function OrderBook({ market }: { market: string }) {
 
         //@ts-expect-error - REST response shape vs shared DepthPayload
         setDepth(depthData);
-        setLastPrice(Number(ticker.lastPrice));
+        const initialPrice = Number(ticker.lastPrice);
+        if (!Number.isNaN(initialPrice)) {
+          lastPriceRef.current = initialPrice;
+          setLastPrice(initialPrice);
+        }
 
         snapshotReadyRef.current = true;
         const queued = pendingUpdatesRef.current;
@@ -97,8 +125,10 @@ export function OrderBook({ market }: { market: string }) {
 
     return () => {
       isMounted = false;
-      manager.sendMessage({ method: "UNSUBSCRIBE", params: [stream] });
+      manager.sendMessage({ method: "UNSUBSCRIBE", params: [depthStream] });
+      manager.sendMessage({ method: "UNSUBSCRIBE", params: [tradeStream] });
       manager.deRegisterCallback("depth", subscriberId);
+      manager.deRegisterCallback("trade", subscriberId);
     };
   }, [market]);
 
@@ -181,7 +211,10 @@ export function OrderBook({ market }: { market: string }) {
       <div className="flex-1 overflow-y-auto">
         {renderRows(askRows, "red")}
         <div className="border-y border-white/10 px-3 py-2">
-          <span className="text-base font-semibold tabular-nums text-emerald-400">
+          <span
+            className={`text-base font-semibold tabular-nums transition-colors duration-300 ${
+              trend === "down" ? "text-red-400" : "text-emerald-400"
+            }`}>
             {lastPrice?.toFixed(2) ?? "—"}
           </span>
         </div>

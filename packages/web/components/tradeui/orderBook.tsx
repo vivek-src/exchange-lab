@@ -1,36 +1,105 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DEPTH, type EngineResponse } from "@exchange-lab/shared";
 import { getDepth, getTicker } from "@/lib/utils/apiClient";
+import { MarketDataManager } from "@/lib/utils/MarketDataManager";
 
 type DepthPayload = Extract<EngineResponse, { type: typeof DEPTH }>["payload"];
-
+type Level = [string, string];
 type Row = {
   price: string;
   qty: string;
   total: number;
 };
 
+// Depth updates are incremental: a quantity of "0" means the price level
+// should be removed. Anything else means "set/replace this level".
+function mergeLevels(existing: Level[], updates: Level[]): Level[] {
+  const book = new Map(existing.map(([price, qty]) => [price, qty]));
+  for (const [price, qty] of updates) {
+    if (Number(qty) === 0) {
+      book.delete(price);
+    } else {
+      book.set(price, qty);
+    }
+  }
+  return Array.from(book.entries());
+}
+
 export function OrderBook({ market }: { market: string }) {
   const [depth, setDepth] = useState<DepthPayload | null>(null);
   const [lastPrice, setLastPrice] = useState<number | null>(null);
 
+  // Tracks whether the initial REST snapshot has landed yet, and buffers
+  // any ws updates that arrive before it does so nothing gets dropped.
+  const snapshotReadyRef = useRef(false);
+  const pendingUpdatesRef = useRef<DepthPayload[]>([]);
+
   useEffect(() => {
-    async function load() {
+    let isMounted = true;
+    const manager = MarketDataManager.getInstance();
+    const subscriberId = `orderbook-${market}`;
+    const stream = `depth@${market}`;
+
+    setDepth(null);
+    setLastPrice(null);
+    snapshotReadyRef.current = false;
+    pendingUpdatesRef.current = [];
+
+    function applyUpdate(update: DepthPayload) {
+      setDepth((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          asks: mergeLevels(prev.asks as Level[], update.asks as Level[]),
+          bids: mergeLevels(prev.bids as Level[], update.bids as Level[]),
+        } as DepthPayload;
+      });
+    }
+
+    manager.registerCallback(
+      "depth",
+      subscriberId,
+      (payload: DepthPayload & { symbol?: string }) => {
+        if (payload.symbol && payload.symbol !== market) return;
+        if (!snapshotReadyRef.current) {
+          pendingUpdatesRef.current.push(payload);
+          return;
+        }
+        applyUpdate(payload);
+      },
+    );
+
+    // Adjust this shape to whatever your backend actually expects for
+    // subscribing — this mirrors the "depth@{market}" naming you described.
+    manager.sendMessage({ method: "SUBSCRIBE", params: [stream] });
+
+    async function loadSnapshot() {
       try {
         const [depthData, ticker] = await Promise.all([
           getDepth(market),
           getTicker(market),
         ]);
+        if (!isMounted) return;
 
-        //@ts-expect-error
+        //@ts-expect-error - REST response shape vs shared DepthPayload
         setDepth(depthData);
         setLastPrice(Number(ticker.lastPrice));
+
+        snapshotReadyRef.current = true;
+        const queued = pendingUpdatesRef.current;
+        pendingUpdatesRef.current = [];
+        queued.forEach(applyUpdate);
       } catch (err) {
         console.error(err);
       }
     }
+    loadSnapshot();
 
-    load();
+    return () => {
+      isMounted = false;
+      manager.sendMessage({ method: "UNSUBSCRIBE", params: [stream] });
+      manager.deRegisterCallback("depth", subscriberId);
+    };
   }, [market]);
 
   if (!depth) {
@@ -43,7 +112,6 @@ export function OrderBook({ market }: { market: string }) {
   const sortedAsks = [...depth.asks].sort(
     (a, b) => Number(b[0]) - Number(a[0]),
   );
-
   const sortedBids = [...depth.bids].sort(
     (a, b) => Number(b[0]) - Number(a[0]),
   );
@@ -54,25 +122,20 @@ export function OrderBook({ market }: { market: string }) {
 
   function calculateTotals(orders: [string, string][], reverse = false): Row[] {
     let runningTotal = 0;
-
     const source = reverse ? [...orders].reverse() : orders;
-
     const rows = source.map(([price, qty]) => {
       runningTotal += Number(qty);
-
       return {
         price,
         qty,
         total: runningTotal,
       };
     });
-
     return reverse ? rows.reverse() : rows;
   }
 
   const askRows = calculateTotals(asks, true);
   const bidRows = calculateTotals(bids);
-
   const maxTotal = Math.max(
     askRows.at(-1)?.total ?? 0,
     bidRows.at(-1)?.total ?? 0,
@@ -92,18 +155,15 @@ export function OrderBook({ market }: { market: string }) {
             width: `${(row.total / maxTotal) * 100}%`,
           }}
         />
-
         <span
           className={`relative ${
             color === "red" ? "text-red-400" : "text-emerald-400"
           }`}>
           {Number(row.price).toFixed(2)}
         </span>
-
         <span className="relative text-right">
           {Number(row.qty).toFixed(4)}
         </span>
-
         <span className="relative text-right text-muted-foreground">
           {row.total.toFixed(4)}
         </span>
@@ -118,18 +178,14 @@ export function OrderBook({ market }: { market: string }) {
         <span className="text-right">Size</span>
         <span className="text-right">Total</span>
       </div>
-
       <div className="flex-1 overflow-y-auto">
         {renderRows(askRows, "red")}
-
         <div className="border-y border-white/10 px-3 py-2">
           <span className="text-base font-semibold tabular-nums text-emerald-400">
             {lastPrice?.toFixed(2) ?? "—"}
           </span>
         </div>
-
         {renderRows(bidRows, "green")}
-
         {bidRows.length === 0 && (
           <div className="py-3 text-center text-xs text-neutral-600">
             No bids

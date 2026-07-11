@@ -13,12 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface OrderEntryProps {
   market: string;
 }
 
-const MARKET_ORDER_SLIPPAGE_PCT = 0.5;
+const MARKET_ORDER_SLIPPAGE_PCT = 1.0;
 
 export function OrderEntry({ market }: OrderEntryProps) {
   const { data: session, status } = useSession();
@@ -27,18 +28,13 @@ export function OrderEntry({ market }: OrderEntryProps) {
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [type, setType] = useState<"limit" | "market">("limit");
 
-  // Input states
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [currentPrice, setCurrentPrice] = useState("0.00");
 
-  // Live market data state
-  const [currentPrice, setCurrentPrice] = useState<string>("0.00");
-
-  // Wallet state
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [walletLoading, setWalletLoading] = useState(false);
 
-  // Submission state
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitResult, setSubmitResult] = useState<{
@@ -54,34 +50,24 @@ export function OrderEntry({ market }: OrderEntryProps) {
   const isBuy = side === "buy";
   const isLimit = type === "limit";
 
-  // Subscribe to live price data
+  // Live price feed
   useEffect(() => {
     let isMounted = true;
 
-    // Fetch initial price
     getTicker(market)
       .then((data) => {
-        if (!isMounted || !data) return;
-        setCurrentPrice(data.lastPrice);
+        if (isMounted && data) setCurrentPrice(data.lastPrice);
       })
       .catch((err) => console.error("Failed to fetch ticker:", err));
 
-    // Connect to WebSocket
     const manager = MarketDataManager.getInstance();
     const callbackId = `ORDER-ENTRY-${market}`;
 
     manager.registerCallback("trade", callbackId, (data: Partial<Ticker>) => {
-      if (!isMounted) return;
-      if (data.symbol && data.symbol !== market) return;
-      if (data.lastPrice) {
-        setCurrentPrice(data.lastPrice);
-      }
+      if (!isMounted || (data.symbol && data.symbol !== market)) return;
+      if (data.lastPrice) setCurrentPrice(data.lastPrice);
     });
-
-    manager.sendMessage({
-      method: "SUBSCRIBE",
-      params: [`trade@${market}`],
-    });
+    manager.sendMessage({ method: "SUBSCRIBE", params: [`trade@${market}`] });
 
     return () => {
       isMounted = false;
@@ -94,14 +80,10 @@ export function OrderEntry({ market }: OrderEntryProps) {
   }, [market]);
 
   async function refreshWallet() {
-    if (!session) {
-      setWallet(null);
-      return;
-    }
+    if (!session) return setWallet(null);
     setWalletLoading(true);
     try {
-      const data = await getWallet();
-      setWallet(data);
+      setWallet(await getWallet());
     } catch (err) {
       console.error("Failed to fetch wallet:", err);
       setWallet(null);
@@ -144,35 +126,30 @@ export function OrderEntry({ market }: OrderEntryProps) {
   function handleSetMax() {
     if (isBuy) {
       if (activePrice <= 0) return;
-      // Floor the amount to prevent rounding up past available balance
       const maxQty =
-        Math.floor((quoteBalance / activePrice) * 1000000) / 1000000;
+        Math.floor((quoteBalance / activePrice) * 1_000_000) / 1_000_000;
       setQuantity(maxQty.toString());
     } else {
       setQuantity(baseBalance.toString());
     }
   }
 
+  function resetFeedback() {
+    setSubmitResult(null);
+    setSubmitError(null);
+  }
+
   async function handleSubmit() {
     if (!canSubmit) return;
-
-    // Ensure we have a session and the user ID
-    // Note: Depending on your NextAuth config, the ID might be located at
-    // session.user.id. You may need to cast it if TS complains.
     const userId = (session?.user as any)?.id;
-
-    if (!userId) {
-      setSubmitError("User ID not found in session");
-      return;
-    }
+    if (!userId) return setSubmitError("User ID not found in session");
 
     setSubmitting(true);
-    setSubmitError(null);
-    setSubmitResult(null);
+    resetFeedback();
 
     try {
       const result = await placeOrder({
-        userId: userId, // <-- Now sending the userId just like Postman
+        userId,
         market,
         side,
         orderType: type,
@@ -191,254 +168,292 @@ export function OrderEntry({ market }: OrderEntryProps) {
       await refreshWallet();
     } catch (err) {
       console.error("Failed to place order:", err);
-      if (isAxiosError(err) && err.response?.data?.message) {
-        setSubmitError(err.response.data.message);
-      } else {
-        setSubmitError(
-          err instanceof Error ? err.message : "Failed to place order",
-        );
-      }
+      const message =
+        (isAxiosError(err) && err.response?.data?.message) ||
+        (err instanceof Error ? err.message : "Failed to place order");
+      setSubmitError(message);
     } finally {
       setSubmitting(false);
     }
   }
 
-  function renderSubmitResult() {
+  function resultMessage() {
     if (!submitResult) return null;
     const { executedQty, remainingQty, restingOnBook } = submitResult;
-
-    let message: string;
-    if (remainingQty === 0) {
-      message = `Filled ${executedQty} ${baseAsset}`;
-    } else if (restingOnBook) {
-      message = `Filled ${executedQty} ${baseAsset}, ${remainingQty} resting on the book`;
-    } else if (executedQty === 0) {
-      message = "No liquidity available — order not filled";
-    } else {
-      message = `Filled ${executedQty} ${baseAsset}, ${remainingQty} cancelled (no more liquidity within range)`;
-    }
-
-    return <p className="text-xs text-muted-foreground">{message}</p>;
-  }
-
-  function renderAvailableRow() {
-    return (
-      <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
-        <span>
-          Available:{" "}
-          {walletLoading
-            ? "…"
-            : `${availableBalance.toLocaleString("en-US", {
-                minimumFractionDigits: isBuy ? 2 : 4,
-                maximumFractionDigits: isBuy ? 2 : 4,
-              })} ${availableLabel}`}
-        </span>
-        {session && (
-          <button
-            type="button"
-            onClick={handleSetMax}
-            className="font-medium text-white/70 hover:text-white">
-            Max
-          </button>
-        )}
-      </div>
-    );
-  }
-
-  function renderActionButton() {
-    if (isLoading) {
-      return (
-        <Button
-          disabled
-          className="w-full h-11 bg-white/5 border border-border/20">
-          Loading...
-        </Button>
-      );
-    }
-
-    if (!session) {
-      return (
-        <div className="flex flex-col gap-2">
-          <Button
-            variant="outline"
-            className="w-full h-11 font-semibold border-border/40 hover:bg-white/5"
-            onClick={() => signIn()}>
-            Log In
-          </Button>
-          <Button
-            className="w-full h-11 font-semibold bg-white text-black hover:bg-white/90"
-            onClick={() => signIn()}>
-            Sign Up
-          </Button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-2">
-        {insufficientBalance && activeQty > 0 && (
-          <p className="text-xs text-red-400">
-            Insufficient {availableLabel} balance
-          </p>
-        )}
-        {submitError && <p className="text-xs text-red-400">{submitError}</p>}
-        {renderSubmitResult()}
-        <Button
-          disabled={!canSubmit}
-          onClick={handleSubmit}
-          className={`w-full h-11 font-semibold text-white transition-colors disabled:opacity-50 ${
-            isBuy
-              ? "bg-emerald-400 hover:bg-[#1f8d83]"
-              : "bg-red-400 hover:bg-[#d54646]"
-          }`}>
-          {submitting ? "Placing..." : `${isBuy ? "Buy" : "Sell"} ${baseAsset}`}
-        </Button>
-      </div>
-    );
+    if (remainingQty === 0) return `Filled ${executedQty} ${baseAsset}`;
+    if (restingOnBook)
+      return `Filled ${executedQty} ${baseAsset}, ${remainingQty} resting on the book`;
+    if (executedQty === 0) return "No liquidity available — order not filled";
+    return `Filled ${executedQty} ${baseAsset}, ${remainingQty} cancelled (no more liquidity within range)`;
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Buy / Sell Toggle */}
-      <div className="grid grid-cols-2 rounded-lg bg-[#1a1a1a] p-1 border border-border/20">
-        <button
-          onClick={() => {
-            setSide("buy");
-            setSubmitResult(null);
-            setSubmitError(null);
-          }}
-          className={`h-9 rounded-md text-sm font-semibold transition-colors focus:outline-none ${
-            isBuy
-              ? "bg-[#26a69a]/20 text-[#26a69a]"
-              : "text-muted-foreground hover:text-white"
-          }`}>
-          Buy
-        </button>
+      <SideToggle
+        side={side}
+        onChange={(s) => {
+          setSide(s);
+          resetFeedback();
+        }}
+      />
 
-        <button
-          onClick={() => {
-            setSide("sell");
-            setSubmitResult(null);
-            setSubmitError(null);
-          }}
-          className={`h-9 rounded-md text-sm font-semibold transition-colors focus:outline-none ${
-            !isBuy
-              ? "bg-[#ef5350]/20 text-[#ef5350]"
-              : "text-muted-foreground hover:text-white"
-          }`}>
-          Sell
-        </button>
-      </div>
-
-      {/* Order Type */}
       <Tabs
         value={type}
         onValueChange={(v) => {
           setType(v as "limit" | "market");
-          setSubmitResult(null);
-          setSubmitError(null);
+          resetFeedback();
         }}>
-        <TabsList className="grid w-full grid-cols-2 bg-[#1a1a1a] border border-border/20">
+        <TabsList className="grid w-full grid-cols-2 bg-[#1a1a1a]">
           <TabsTrigger
             value="limit"
-            className="data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white text-muted-foreground">
+            className="text-muted-foreground data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white">
             Limit
           </TabsTrigger>
           <TabsTrigger
             value="market"
-            className="data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white text-muted-foreground">
+            className="text-muted-foreground data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white">
             Market
           </TabsTrigger>
         </TabsList>
 
-        {/* LIMIT ORDER CONTENT */}
-        <TabsContent value="limit" className="space-y-4 mt-4">
+        <TabsContent value="limit" className="mt-4 space-y-3">
+          <AmountField
+            label="Price"
+            value={price}
+            onChange={setPrice}
+            placeholder={currentPrice}
+            suffix={quoteAsset}
+          />
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Price</Label>
-            <div className="relative">
-              <Input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder={currentPrice}
-                className="pr-12 bg-transparent border-border/40 focus-visible:ring-1 focus-visible:ring-border tabular-nums"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">
-                {quoteAsset}
-              </span>
-            </div>
+            <AmountField
+              label="Quantity"
+              value={quantity}
+              onChange={setQuantity}
+              placeholder="0.00"
+              suffix={baseAsset}
+            />
+            <AvailableRow
+              loading={walletLoading}
+              amount={availableBalance}
+              label={availableLabel}
+              decimals={isBuy ? 2 : 4}
+              showMax={!!session}
+              onMax={handleSetMax}
+            />
           </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Quantity</Label>
-            <div className="relative">
-              <Input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                placeholder="0.00"
-                className="pr-12 bg-transparent border-border/40 focus-visible:ring-1 focus-visible:ring-border tabular-nums"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">
-                {baseAsset}
-              </span>
-            </div>
-            {renderAvailableRow()}
-          </div>
-
-          {/* Total Calculation */}
-          <div className="rounded-lg bg-[#1a1a1a] border border-border/20 p-3 text-sm">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Total</span>
-              <span className="font-medium tabular-nums">
-                {totalValue} {quoteAsset}
-              </span>
-            </div>
-          </div>
-
-          {renderActionButton()}
+          <SummaryBox
+            rows={[{ label: "Total", value: `${totalValue} ${quoteAsset}` }]}
+          />
         </TabsContent>
 
-        {/* MARKET ORDER CONTENT */}
-        <TabsContent value="market" className="space-y-4 mt-4">
+        <TabsContent value="market" className="mt-4 space-y-3">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Quantity</Label>
-            <div className="relative">
-              <Input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                placeholder="0.00"
-                className="pr-12 bg-transparent border-border/40 focus-visible:ring-1 focus-visible:ring-border tabular-nums"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">
-                {baseAsset}
-              </span>
-            </div>
-            {renderAvailableRow()}
+            <AmountField
+              label="Quantity"
+              value={quantity}
+              onChange={setQuantity}
+              placeholder="0.00"
+              suffix={baseAsset}
+            />
+            <AvailableRow
+              loading={walletLoading}
+              amount={availableBalance}
+              label={availableLabel}
+              decimals={isBuy ? 2 : 4}
+              showMax={!!session}
+              onMax={handleSetMax}
+            />
           </div>
-
-          {/* Estimated Total Calculation for Market Order */}
-          <div className="rounded-lg bg-[#1a1a1a] border border-border/20 p-3 text-sm space-y-1">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">
-                Est. Price ({MARKET_ORDER_SLIPPAGE_PCT}% slippage)
-              </span>
-              <span className="font-medium tabular-nums">
-                {marketExecutionPrice.toFixed(2)} {quoteAsset}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Est. Total</span>
-              <span className="font-medium tabular-nums">
-                ~{totalValue} {quoteAsset}
-              </span>
-            </div>
-          </div>
-
-          {renderActionButton()}
+          <SummaryBox
+            rows={[
+              {
+                label: `Est. Price (${MARKET_ORDER_SLIPPAGE_PCT}% slippage)`,
+                value: `${marketExecutionPrice.toFixed(2)} ${quoteAsset}`,
+              },
+              { label: "Est. Total", value: `~${totalValue} ${quoteAsset}` },
+            ]}
+          />
         </TabsContent>
+
+        {/* Shared feedback + submit — same for both tabs since they share all order state */}
+        <div className="mt-3 space-y-2">
+          {insufficientBalance && activeQty > 0 && (
+            <Banner
+              tone="error"
+              text={`Insufficient ${availableLabel} balance`}
+            />
+          )}
+          {submitError && <Banner tone="error" text={submitError} />}
+          {resultMessage() && <Banner tone="success" text={resultMessage()!} />}
+
+          {isLoading ? (
+            <Button disabled className="h-11 w-full bg-white/5">
+              Loading...
+            </Button>
+          ) : !session ? (
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                className="h-11 w-full border-border/40 font-semibold hover:bg-white/5"
+                onClick={() => signIn()}>
+                Log In
+              </Button>
+              <Button
+                className="h-11 w-full bg-white font-semibold text-black hover:bg-white/90"
+                onClick={() => signIn()}>
+                Sign Up
+              </Button>
+            </div>
+          ) : (
+            <Button
+              disabled={!canSubmit}
+              onClick={handleSubmit}
+              className={`h-11 w-full font-semibold text-white transition-colors disabled:opacity-40 ${
+                isBuy
+                  ? "bg-emerald-400 hover:bg-emerald-500"
+                  : "bg-red-400 hover:bg-red-500"
+              }`}>
+              {submitting
+                ? "Placing…"
+                : `${isBuy ? "Buy" : "Sell"} ${baseAsset}`}
+            </Button>
+          )}
+        </div>
       </Tabs>
+    </div>
+  );
+}
+
+// ── Small presentational pieces, kept local since they're only used here ──
+
+function SideToggle({
+  side,
+  onChange,
+}: {
+  side: "buy" | "sell";
+  onChange: (side: "buy" | "sell") => void;
+}) {
+  const isBuy = side === "buy";
+  return (
+    <div className="grid grid-cols-2 gap-1 rounded-lg bg-[#1a1a1a] p-1">
+      <button
+        onClick={() => onChange("buy")}
+        className={`h-9 rounded-md text-sm font-semibold transition-colors ${
+          isBuy
+            ? "bg-emerald-400/20 text-emerald-400"
+            : "text-muted-foreground hover:text-white"
+        }`}>
+        Buy
+      </button>
+      <button
+        onClick={() => onChange("sell")}
+        className={`h-9 rounded-md text-sm font-semibold transition-colors ${
+          !isBuy
+            ? "bg-red-400/20 text-red-400"
+            : "text-muted-foreground hover:text-white"
+        }`}>
+        Sell
+      </button>
+    </div>
+  );
+}
+
+function AmountField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  suffix,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  suffix: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <div className="relative">
+        <Input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="pr-14 border-transparent bg-white/[0.04] focus-visible:ring-1 focus-visible:ring-white/20"
+        />
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+          {suffix}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function AvailableRow({
+  loading,
+  amount,
+  label,
+  decimals,
+  showMax,
+  onMax,
+}: {
+  loading: boolean;
+  amount: number;
+  label: string;
+  decimals: number;
+  showMax: boolean;
+  onMax: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between px-0.5 text-xs">
+      <span className="text-muted-foreground">
+        Available{" "}
+        <span className="text-foreground/80">
+          {loading
+            ? "…"
+            : `${amount.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} ${label}`}
+        </span>
+      </span>
+      {showMax && (
+        <button
+          type="button"
+          onClick={onMax}
+          className="font-medium text-white/70 hover:text-white">
+          Max
+        </button>
+      )}
+    </div>
+  );
+}
+
+function SummaryBox({ rows }: { rows: { label: string; value: string }[] }) {
+  return (
+    <div className="space-y-1.5 rounded-lg bg-[#1a1a1a] p-3 text-sm">
+      {rows.map((row) => (
+        <div key={row.label} className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">{row.label}</span>
+          <span className="font-medium">{row.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Banner({ tone, text }: { tone: "error" | "success"; text: string }) {
+  const isError = tone === "error";
+  return (
+    <div
+      className={`flex items-start gap-2 rounded-lg px-3 py-2 ${isError ? "bg-red-400/10" : "bg-emerald-400/10"}`}>
+      {isError ? (
+        <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-red-400" />
+      ) : (
+        <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald-400" />
+      )}
+      <p
+        className={`text-xs leading-relaxed ${isError ? "text-red-300" : "text-emerald-300"}`}>
+        {text}
+      </p>
     </div>
   );
 }

@@ -116,19 +116,27 @@ export class Engine {
       case CREATE_ORDER:
         const newOrderId = snowflake.generate();
         try {
-          const { executedQty, fills } = this.createOrder(
-            message.data.market,
-            message.data.price,
-            message.data.quantity,
-            message.data.side,
-            message.data.userId,
-            newOrderId,
-          );
+          // Default to "limit" for backwards compatibility
+          const orderType = message.data.orderType ?? "limit";
+          const executionType = message.data.executionType;
+          const { executedQty, fills, remainingQty, restingOnBook } =
+            this.createOrder(
+              message.data.market,
+              message.data.price,
+              message.data.quantity,
+              message.data.side,
+              message.data.userId,
+              newOrderId,
+              orderType,
+              executionType,
+            );
           RedisManager.getInstance().sendToApi(clientId, {
             type: "ORDER_PLACED",
             payload: {
               orderId: newOrderId.toString(),
               executedQty,
+              remainingQty,
+              restingOnBook,
               fills: fills.map((fill) => ({
                 price: fill.price.toString(),
                 qty: fill.qty,
@@ -349,6 +357,8 @@ export class Engine {
     side: "buy" | "sell",
     userId: string,
     newOrderId: bigint,
+    orderType: "limit" | "market" = "limit",
+    executionType?: "ioc",
   ) {
     const orderbook = this.orderbookMap.get(market);
     const { baseAsset, quoteAsset } = parseMarket(market);
@@ -374,15 +384,38 @@ export class Engine {
       side,
       userId,
     };
-
-    const { fills, executedQty } = orderbook.addOrder(order);
+    const shouldRest = orderType === "limit" && executionType !== "ioc";
+    const { fills, executedQty } = orderbook.addOrder(order, {
+      rest: shouldRest,
+    });
     this.updateBalance(userId, baseAsset, quoteAsset, side, fills);
+
+    const remainingQty = Number(quantity) - executedQty;
+    const restingOnBook = shouldRest && remainingQty > 0;
+
+    this.reconcileLockedFunds(
+      userId,
+      baseAsset,
+      quoteAsset,
+      side,
+      Number(price),
+      executedQty,
+      remainingQty,
+      restingOnBook,
+      fills,
+    );
 
     this.createDbTrades(fills, market, side, userId);
     this.updateDbOrders(order, executedQty, fills, market);
     this.publishWsDepthUpdates(fills, price, side, market);
     this.publishWsTrades(fills, market, side);
-    return { executedQty, fills, orderId: order.orderId };
+    return {
+      executedQty,
+      fills,
+      orderId: order.orderId,
+      remainingQty,
+      restingOnBook,
+    };
   }
 
   saveSnapshot() {
@@ -489,6 +522,45 @@ export class Engine {
 
       asset.available -= qty;
       asset.locked += qty;
+    }
+  }
+
+  reconcileLockedFunds(
+    userId: string,
+    baseAsset: string,
+    quoteAsset: string,
+    side: "buy" | "sell",
+    price: number,
+    executedQty: number,
+    remainingQty: number,
+    restingOnBook: boolean,
+    fills: Fill[],
+  ) {
+    const userWallet = this.balances.get(userId);
+    if (!userWallet) return;
+
+    if (side === "buy") {
+      const reservedForFilled = executedQty * price;
+      const actuallySpent = fills.reduce((sum, f) => sum + f.qty * f.price, 0);
+      const favorableSurplus = reservedForFilled - actuallySpent;
+      const remainderReserve = restingOnBook ? 0 : remainingQty * price;
+      const toRelease = favorableSurplus + remainderReserve;
+
+      if (toRelease > 0) {
+        const asset = userWallet[quoteAsset];
+        if (asset) {
+          asset.locked -= toRelease;
+          asset.available += toRelease;
+        }
+      }
+    } else {
+      if (!restingOnBook && remainingQty > 0) {
+        const asset = userWallet[baseAsset];
+        if (asset) {
+          asset.locked -= remainingQty;
+          asset.available += remainingQty;
+        }
+      }
     }
   }
 

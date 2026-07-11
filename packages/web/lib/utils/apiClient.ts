@@ -98,3 +98,34 @@ export async function placeOrder(
   });
   return data;
 }
+
+export async function getOpenOrders(
+  userId: string,
+  market: string,
+): Promise<Extract<EngineResponse, { type: "OPEN_ORDERS" }>["payload"]> {
+  const { data } = await api.get<
+    Extract<EngineResponse, { type: "OPEN_ORDERS" }>["payload"]
+  >("/order/open", {
+    params: {
+      userId,
+      market,
+    },
+  });
+  return data;
+}
+
+export async function cancelOrder(
+  orderId: string,
+  market: string,
+): Promise<Extract<EngineResponse, { type: "ORDER_CANCELLED" }>["payload"]> {
+  const { data } = await api.delete<
+    Extract<EngineResponse, { type: "ORDER_CANCELLED" }>["payload"]
+  >("/order", {
+    // Axios requires body payloads for DELETE requests to be nested inside the `data` config property
+    data: {
+      orderId,
+      market,
+    },
+  });
+  return data;
+}

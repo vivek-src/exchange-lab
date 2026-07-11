@@ -1,5 +1,22 @@
 import axios from "axios";
-import type { Depth, KLine, Ticker, Trade } from "@exchange-lab/shared";
+import type {
+  DepthUpdateMessage,
+  KLine,
+  Ticker,
+  Trade,
+  EngineRequest,
+  EngineResponse,
+} from "@exchange-lab/shared";
+
+// Extract the exact types from your Engine definitions
+export type CreateOrderPayload = Extract<
+  EngineRequest,
+  { type: "CREATE_ORDER" }
+>["data"];
+export type OrderPlacedResponse = Extract<
+  EngineResponse,
+  { type: "ORDER_PLACED" }
+>["payload"];
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_REST_API_URL ?? "http://localhost:3001/api/v1";
@@ -34,8 +51,8 @@ export async function getTicker(market: string): Promise<Ticker> {
   return ticker;
 }
 
-export async function getDepth(market: string): Promise<Depth> {
-  const { data } = await api.get<Depth>("/depth", {
+export async function getDepth(market: string): Promise<DepthUpdateMessage> {
+  const { data } = await api.get<DepthUpdateMessage>("/depth", {
     params: {
       market,
     },
@@ -44,14 +61,10 @@ export async function getDepth(market: string): Promise<Depth> {
   return data;
 }
 
-export async function getTrades(
-  market: string,
-  limit: number,
-): Promise<Trade[]> {
+export async function getTrades(market: string): Promise<Trade[]> {
   const { data } = await api.get<Trade[]>("/trades", {
     params: {
       market,
-      limit,
     },
   });
 
@@ -74,4 +87,14 @@ export async function getKlines(
   });
 
   return data.sort((a, b) => Number(a.end) - Number(b.end));
+}
+
+// Added placeOrder without touching the original Axios config
+export async function placeOrder(
+  payload: CreateOrderPayload,
+): Promise<OrderPlacedResponse> {
+  const { data } = await api.post<OrderPlacedResponse>("/order", payload, {
+    timeout: 20_000,
+  });
+  return data;
 }

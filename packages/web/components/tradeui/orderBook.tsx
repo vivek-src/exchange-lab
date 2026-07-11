@@ -14,17 +14,22 @@ type Row = {
 // Depth updates are incremental: a quantity of "0" means the price level
 // should be removed. Anything else means "set/replace this level".
 function mergeLevels(existing: Level[], updates: Level[]): Level[] {
-  const book = new Map(existing.map(([price, qty]) => [price, qty]));
+  const map = new Map<string, string>();
+
+  for (const [price, qty] of existing) {
+    map.set(price, qty);
+  }
+
   for (const [price, qty] of updates) {
-    if (Number(qty) === 0) {
-      book.delete(price);
+    if (+qty === 0) {
+      map.delete(price);
     } else {
-      book.set(price, qty);
+      map.set(price, qty);
     }
   }
-  return Array.from(book.entries());
-}
 
+  return [...map.entries()];
+}
 export function OrderBook({ market }: { market: string }) {
   const [depth, setDepth] = useState<DepthPayload | null>(null);
   const [lastPrice, setLastPrice] = useState<number | null>(null);
@@ -53,11 +58,13 @@ export function OrderBook({ market }: { market: string }) {
     function applyUpdate(update: DepthPayload) {
       setDepth((prev) => {
         if (!prev) return prev;
+        const bids = mergeLevels(prev.bids as Level[], update.bids as Level[]);
+        const asks = mergeLevels(prev.asks as Level[], update.asks as Level[]);
         return {
           ...prev,
-          asks: mergeLevels(prev.asks as Level[], update.asks as Level[]),
-          bids: mergeLevels(prev.bids as Level[], update.bids as Level[]),
-        } as DepthPayload;
+          bids,
+          asks,
+        };
       });
     }
 
@@ -66,10 +73,12 @@ export function OrderBook({ market }: { market: string }) {
       subscriberId,
       (payload: DepthPayload & { symbol?: string }) => {
         if (payload.symbol && payload.symbol !== market) return;
+
         if (!snapshotReadyRef.current) {
           pendingUpdatesRef.current.push(payload);
           return;
         }
+
         applyUpdate(payload);
       },
     );
@@ -77,21 +86,31 @@ export function OrderBook({ market }: { market: string }) {
     manager.registerCallback(
       "trade",
       subscriberId,
-      (payload: { symbol?: string; lastPrice?: string }) => {
+      async (payload: { symbol?: string; lastPrice?: string }) => {
         if (payload.symbol && payload.symbol !== market) return;
 
         const newPrice = Number(payload.lastPrice);
-        if (Number.isNaN(newPrice)) return;
+        if (!Number.isNaN(newPrice)) {
+          if (lastPriceRef.current !== null) {
+            if (newPrice > lastPriceRef.current) setTrend("up");
+            else if (newPrice < lastPriceRef.current) setTrend("down");
+          }
 
-        if (lastPriceRef.current !== null) {
-          if (newPrice > lastPriceRef.current) setTrend("up");
-          else if (newPrice < lastPriceRef.current) setTrend("down");
+          lastPriceRef.current = newPrice;
+          setLastPrice(newPrice);
         }
-        lastPriceRef.current = newPrice;
-        setLastPrice(newPrice);
+
+        // Resync orderbook after every trade
+        try {
+          const latestDepth = await getDepth(market);
+
+          //@ts-expect-error
+          setDepth(latestDepth);
+        } catch (err) {
+          console.error(err);
+        }
       },
     );
-
     // Adjust this shape to whatever your backend actually expects for
     // subscribing — this mirrors the "depth@{market}" naming you described.
     manager.sendMessage({ method: "SUBSCRIBE", params: [depthStream] });

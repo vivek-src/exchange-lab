@@ -40,15 +40,20 @@ export async function getTickers(): Promise<Ticker[]> {
 }
 
 export async function getTicker(market: string): Promise<Ticker> {
-  const tickers = await getTickers();
+  try {
+    const { data } = await api.get<Ticker[]>("/tickers", {
+      params: { market },
+    });
 
-  const ticker = tickers.find((ticker) => ticker.symbol === market);
+    if (!data.length) {
+      throw new Error(`Ticker not found for market: ${market}`);
+    }
 
-  if (!ticker) {
-    throw new Error(`Ticker not found for market: ${market}`);
+    return data[0];
+  } catch (error) {
+    console.error(`Failed to fetch ticker for ${market}:`, error);
+    throw error;
   }
-
-  return ticker;
 }
 
 export async function getDepth(market: string): Promise<DepthUpdateMessage> {

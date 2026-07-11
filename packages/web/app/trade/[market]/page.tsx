@@ -6,6 +6,7 @@ import { ReactNode, useState } from "react";
 import { MarketBar } from "@/components/tradeui/marketBar";
 import { TVChart } from "@/components/tradeui/tvChartCard";
 import { OrderBook } from "@/components/tradeui/orderBook";
+import { TradesList } from "@/components/tradeui/trades";
 import { OrderEntry } from "@/components/tradeui/orderEntry";
 
 export default function TradePage() {
@@ -74,9 +75,7 @@ export default function TradePage() {
             {activeView === "book" ? (
               <OrderBook market={market} />
             ) : (
-              <div className="flex h-full flex-col items-center justify-center text-sm text-muted-foreground">
-                Recent Trades Component
-              </div>
+              <TradesList market={market} />
             )}
           </div>
         </Panel>

@@ -170,24 +170,21 @@ export class Orderbook {
     const asksObject: { [key: string]: number } = {};
 
     // Aggregating Bids of same price
-    for (let i = 0; i < this.bids.length; i++) {
-      const order = this.bids[i]!;
-      if (!bidsObject[order.price]) {
-        bidsObject[order.price] = 0;
-      }
-      const currentQty = bidsObject[order.price] || 0;
+    for (const order of this.bids) {
+      const remainingQty = order.quantity - order.filled;
 
-      bidsObject[order.price] = currentQty + order.quantity;
+      if (remainingQty <= 0) continue;
+
+      bidsObject[order.price] = (bidsObject[order.price] ?? 0) + remainingQty;
     }
 
     // Aggregating asks of same price
-    for (let i = 0; i < this.asks.length; i++) {
-      const order = this.asks[i]!;
-      if (!asksObject[order.price]) {
-        asksObject[order.price] = 0;
-      }
-      const currentQty = asksObject[order.price] || 0;
-      asksObject[order.price] = currentQty + order.quantity;
+    for (const order of this.asks) {
+      const remainingQty = order.quantity - order.filled;
+
+      if (remainingQty <= 0) continue;
+
+      asksObject[order.price] = (asksObject[order.price] ?? 0) + remainingQty;
     }
 
     // Formatting Return Array

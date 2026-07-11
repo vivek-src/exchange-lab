@@ -23,6 +23,8 @@ export type EngineRequest =
         quantity: string;
         side: "buy" | "sell";
         userId: string;
+        orderType: "limit" | "market";
+        executionType?: "ioc";
       };
     }
   | {
@@ -76,6 +78,8 @@ export type EngineResponse =
       payload: {
         orderId: string;
         executedQty: number;
+        remainingQty: number;
+        restingOnBook: boolean;
         fills: {
           price: string;
           qty: number;

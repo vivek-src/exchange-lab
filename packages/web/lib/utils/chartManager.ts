@@ -155,7 +155,6 @@ export class ChartManager {
 
   public update(candle: Candle) {
     const { candlePoint, volumePoint } = this.transformData(candle);
-    console.log("series update time", candlePoint.time);
     this.candleSeries.update(candlePoint);
     this.volumeSeries.update(volumePoint);
   }

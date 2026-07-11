@@ -6,12 +6,12 @@ export const createOrderSchema = z.object({
     .string()
     .min(3)
     .regex(/^[A-Z]+_[A-Z]+$/),
-  side: z.enum(["buy", "sell"]),
-  orderType: z.enum(["limit", "market"]),
   price: z.string().regex(/^\d+(\.\d+)?$/, "Price must be a valid number"),
   quantity: z
     .string()
     .regex(/^\d+(\.\d+)?$/, "Quantity must be a valid number"),
+  side: z.enum(["buy", "sell"]),
+  orderType: z.enum(["limit", "market"]),
   executionType: z.enum(["ioc"]).optional(),
 });
 

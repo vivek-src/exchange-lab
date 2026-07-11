@@ -24,7 +24,7 @@ export type EngineRequest =
         side: "buy" | "sell";
         userId: string;
         orderType: "limit" | "market";
-        executionType?: "ioc";
+        executionType?: "ioc" | undefined;
       };
     }
   | {

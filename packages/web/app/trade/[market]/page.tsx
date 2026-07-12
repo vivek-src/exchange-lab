@@ -3,12 +3,12 @@
 import { useParams } from "next/navigation";
 import { ReactNode, useState } from "react";
 
-import { MarketBar } from "@/components/tradeui/marketBar";
-import { TVChart } from "@/components/tradeui/tvChartCard";
-import { OrderBook } from "@/components/tradeui/orderBook";
-import { TradesList } from "@/components/tradeui/trades";
-import { OrderEntry } from "@/components/tradeui/orderEntry";
-import { BottomPannel } from "@/components/tradeui/bottomPannel";
+import { MarketBar } from "@/components/markets/marketBar";
+import { TVChart } from "@/components/markets/tvChartCard";
+import { OrderBook } from "@/components/markets/orderBook";
+import { TradesList } from "@/components/markets/trades";
+import { OrderEntry } from "@/components/markets/orderEntry";
+import { BottomPannel } from "@/components/markets/bottomPannel";
 
 export default function TradePage() {
   const params = useParams();

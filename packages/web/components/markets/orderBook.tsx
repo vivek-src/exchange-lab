@@ -206,7 +206,7 @@ export function OrderBook({ market }: { market: string }) {
         />
         <span
           className={`relative ${
-            color === "red" ? "text-red-400" : "text-emerald-400"
+            color === "red" ? "text-red-500" : "text-emerald-500"
           }`}>
           {Number(row.price).toFixed(2)}
         </span>
@@ -232,7 +232,7 @@ export function OrderBook({ market }: { market: string }) {
         <div className="border-y border-white/10 px-3 py-2">
           <span
             className={`text-base font-semibold tabular-nums transition-colors duration-300 ${
-              trend === "down" ? "text-red-400" : "text-emerald-400"
+              trend === "down" ? "text-red-500" : "text-emerald-500"
             }`}>
             {lastPrice?.toFixed(2) ?? "—"}
           </span>

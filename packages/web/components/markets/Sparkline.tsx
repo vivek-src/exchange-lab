@@ -23,7 +23,7 @@ export function Sparkline({ data }: { data: number[] }) {
         points={points}
         fill="none"
         strokeWidth="1.5"
-        className={isUp ? "stroke-emerald-400" : "stroke-red-400"}
+        className={isUp ? "stroke-emerald-500" : "stroke-red-500"}
       />
     </svg>
   );

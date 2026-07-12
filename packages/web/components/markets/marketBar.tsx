@@ -65,7 +65,7 @@ export const MarketBar = ({ market }: { market: string }) => {
       : trend === "down"
         ? "text-red-500"
         : priceChangeNum >= 0
-          ? "text-green-500"
+          ? "text-emerald-500"
           : "text-red-500";
 
   return (

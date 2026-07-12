@@ -310,8 +310,8 @@ export function OrderEntry({ market }: OrderEntryProps) {
               onClick={handleSubmit}
               className={`h-11 w-full font-semibold text-white transition-colors disabled:opacity-40 ${
                 isBuy
-                  ? "bg-emerald-400 hover:bg-emerald-500"
-                  : "bg-red-400 hover:bg-red-500"
+                  ? "bg-emerald-500 hover:bg-emerald-700"
+                  : "bg-red-500 hover:bg-red-700"
               }`}>
               {submitting
                 ? "Placing…"
@@ -340,7 +340,7 @@ function SideToggle({
         onClick={() => onChange("buy")}
         className={`h-9 rounded-md text-sm font-semibold transition-colors ${
           isBuy
-            ? "bg-emerald-400/20 text-emerald-400"
+            ? "bg-emerald-500/20 text-emerald-500"
             : "text-muted-foreground hover:text-white"
         }`}>
         Buy
@@ -349,7 +349,7 @@ function SideToggle({
         onClick={() => onChange("sell")}
         className={`h-9 rounded-md text-sm font-semibold transition-colors ${
           !isBuy
-            ? "bg-red-400/20 text-red-400"
+            ? "bg-red-500/20 text-red-500"
             : "text-muted-foreground hover:text-white"
         }`}>
         Sell
@@ -444,11 +444,11 @@ function Banner({ tone, text }: { tone: "error" | "success"; text: string }) {
   const isError = tone === "error";
   return (
     <div
-      className={`flex items-start gap-2 rounded-lg px-3 py-2 ${isError ? "bg-red-400/10" : "bg-emerald-400/10"}`}>
+      className={`flex items-start gap-2 rounded-lg px-3 py-2 ${isError ? "bg-red-500/10" : "bg-emerald-500/10"}`}>
       {isError ? (
-        <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-red-400" />
+        <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-red-500" />
       ) : (
-        <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald-400" />
+        <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
       )}
       <p
         className={`text-xs leading-relaxed ${isError ? "text-red-300" : "text-emerald-300"}`}>

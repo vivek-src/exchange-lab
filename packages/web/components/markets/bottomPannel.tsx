@@ -223,7 +223,7 @@ function OrdersTab({
           <tr key={order.orderId} className="border-b border-border/10">
             <td
               className={`py-2.5 font-semibold ${
-                order.side === "buy" ? "text-emerald-400" : "text-red-400"
+                order.side === "buy" ? "text-emerald-500" : "text-red-500"
               }`}>
               {order.side.toUpperCase()}
             </td>
@@ -234,7 +234,7 @@ function OrdersTab({
                 size="sm"
                 disabled={cancellingId === order.orderId}
                 onClick={() => onCancel(order.orderId)}
-                className="h-7 bg-red-500/15 text-xs font-medium text-red-400 border border-red-500/30 hover:bg-red-500/25 hover:text-red-300 disabled:opacity-50">
+                className="h-7 bg-red-500/15 text-xs font-medium text-red-500 border border-red-500/30 hover:bg-red-500/25 hover:text-red-300 disabled:opacity-50">
                 {cancellingId === order.orderId ? "Cancelling…" : "Cancel"}
               </Button>
             </td>

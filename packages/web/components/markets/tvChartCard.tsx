@@ -3,9 +3,11 @@ import { ChartManager, Candle } from "@/lib/utils/chartManager";
 import { getKlines } from "@/lib/utils/apiClient";
 import { Button } from "@/components/ui/button";
 import { MarketDataManager } from "@/lib/utils/MarketDataManager";
+import { CandlestickChart, LineChart } from "lucide-react";
 
 const INTERVALS = ["1m", "1h", "1d", "1w"] as const;
 type Interval = (typeof INTERVALS)[number];
+type ChartType = "candlestick" | "line";
 
 const LOOKBACK_MS: Record<Interval, number> = {
   "1m": 1000 * 60 * 60 * 24 * 3, // 3 days
@@ -13,9 +15,6 @@ const LOOKBACK_MS: Record<Interval, number> = {
   "1d": 1000 * 60 * 60 * 24 * 90, // 90 days
   "1w": 1000 * 60 * 60 * 24 * 365, // 1 year
 };
-
-// Must match the backend CONFIG map's `ms` values exactly — used by the
-// WS handler to know when a trade rolls over into a new candle bucket.
 const INTERVAL_MS: Record<Interval, number> = {
   "1m": 60_000,
   "1h": 3_600_000,
@@ -29,13 +28,11 @@ export function TVChart({ market }: { market: string }) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartManagerRef = useRef<ChartManager | null>(null);
   const lastCandleRef = useRef<Candle | null>(null);
+  const dataRef = useRef<Candle[]>([]); // cached formatted candles for the current market/interval
 
   const [interval, setInterval] = useState<Interval>("1m");
+  const [chartType, setChartType] = useState<ChartType>("candlestick");
   const [loading, setLoading] = useState(false);
-
-  // ==========================================
-  // STEP 1: LOAD HISTORICAL DATA (REST API)
-  // ==========================================
   useEffect(() => {
     let ignore = false;
 
@@ -75,6 +72,8 @@ export function TVChart({ market }: { market: string }) {
 
         if (ignore) return;
 
+        dataRef.current = formattedData;
+
         chartManagerRef.current?.destroy();
         chartManagerRef.current = new ChartManager(
           chartRef.current,
@@ -82,6 +81,7 @@ export function TVChart({ market }: { market: string }) {
           {
             background: "transparent",
             textColor: "#8f949e",
+            seriesType: chartType,
           },
         );
 
@@ -104,6 +104,22 @@ export function TVChart({ market }: { market: string }) {
       chartManagerRef.current = null;
     };
   }, [market, interval]);
+
+  useEffect(() => {
+    if (!chartRef.current || dataRef.current.length === 0) return;
+
+    chartManagerRef.current?.destroy();
+    chartManagerRef.current = new ChartManager(
+      chartRef.current,
+      dataRef.current,
+      {
+        background: "transparent",
+        textColor: "#8f949e",
+        seriesType: chartType,
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartType]);
 
   // STEP 2: STREAM REAL-TIME DATA (WEBSOCKET)
 
@@ -146,6 +162,7 @@ export function TVChart({ market }: { market: string }) {
         };
 
         lastCandleRef.current = seeded;
+        dataRef.current = [...dataRef.current, seeded];
         chartManagerRef.current.update(seeded);
         return;
       }
@@ -161,6 +178,7 @@ export function TVChart({ market }: { market: string }) {
           low: Math.min(current.low, tradePrice),
           volume: current.volume + tradeVolume,
         };
+        dataRef.current = [...dataRef.current.slice(0, -1), candle];
       } else {
         const bucketStart = Math.floor(tradeTime / intervalMs) * intervalMs;
 
@@ -172,6 +190,7 @@ export function TVChart({ market }: { market: string }) {
           close: tradePrice,
           volume: tradeVolume,
         };
+        dataRef.current = [...dataRef.current, candle];
       }
 
       lastCandleRef.current = candle;
@@ -193,9 +212,8 @@ export function TVChart({ market }: { market: string }) {
   }, [market, interval]);
 
   return (
-    // <div className="flex flex-col h-full w-full bg-card rounded-lg overflow-hidden min-h-0">
     <div className="flex h-full w-full min-h-0 min-w-0 flex-col overflow-hidden rounded-lg bg-card">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex gap-1">
           {INTERVALS.map((iv) => (
             <Button
@@ -205,16 +223,43 @@ export function TVChart({ market }: { market: string }) {
               onClick={() => setInterval(iv)}
               className={`h-7 px-2 text-xs ${
                 iv === interval
-                  ? "text-primary bg-primary/10"
+                  ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}>
               {iv.toUpperCase()}
             </Button>
           ))}
         </div>
+
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setChartType("candlestick")}
+            aria-label="Candlestick chart"
+            className={`h-7 w-7 p-0 ${
+              chartType === "candlestick"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}>
+            <CandlestickChart className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setChartType("line")}
+            aria-label="Line chart"
+            className={`h-7 w-7 p-0 ${
+              chartType === "line"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}>
+            <LineChart className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      <div className="flex-1 w-full relative">
+      <div className="relative w-full flex-1">
         <div
           ref={chartRef}
           className="absolute inset-0"

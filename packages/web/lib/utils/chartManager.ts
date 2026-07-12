@@ -1,5 +1,6 @@
 import {
   CandlestickSeries,
+  LineSeries,
   ColorType,
   createChart,
   CrosshairMode,
@@ -24,21 +25,33 @@ export interface ChartTheme {
   textColor: string;
 }
 
+export type SeriesType = "candlestick" | "line";
+
+export interface ChartOptions extends ChartTheme {
+  seriesType?: SeriesType;
+}
+
+type PriceSeries = ISeriesApi<"Candlestick", Time> | ISeriesApi<"Line", Time>;
+
 export class ChartManager {
   private chart: IChartApi;
-  private candleSeries: ISeriesApi<"Candlestick", Time>;
+  private priceSeries: PriceSeries;
   private volumeSeries: ISeriesApi<"Histogram", Time>;
+  private seriesType: SeriesType;
+  private data: Candle[] = [];
 
   constructor(
     container: HTMLElement,
     initialData: Candle[],
-    theme: ChartTheme,
+    options: ChartOptions,
   ) {
+    this.seriesType = options.seriesType ?? "candlestick";
+
     this.chart = createChart(container, {
       autoSize: true,
       layout: {
-        background: { type: ColorType.Solid, color: theme.background },
-        textColor: theme.textColor,
+        background: { type: ColorType.Solid, color: options.background },
+        textColor: options.textColor,
         fontSize: 11,
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
@@ -94,14 +107,7 @@ export class ChartManager {
       },
     });
 
-    this.candleSeries = this.chart.addSeries(CandlestickSeries, {
-      upColor: "#039d63",
-      downColor: "#ce484b",
-      borderVisible: true,
-      wickUpColor: "#039d63",
-      wickDownColor: "#ce484b",
-      priceFormat: { type: "price", precision: 2, minMove: 0.01 },
-    });
+    this.priceSeries = this.createPriceSeries(this.seriesType);
 
     this.volumeSeries = this.chart.addSeries(HistogramSeries, {
       priceScaleId: "volume-pane",
@@ -114,6 +120,25 @@ export class ChartManager {
 
     this.setData(initialData);
     this.chart.timeScale().fitContent();
+  }
+
+  private createPriceSeries(type: SeriesType): PriceSeries {
+    if (type === "line") {
+      return this.chart.addSeries(LineSeries, {
+        color: "#2F5AF5",
+        lineWidth: 2,
+        priceFormat: { type: "price", precision: 2, minMove: 0.01 },
+      });
+    }
+
+    return this.chart.addSeries(CandlestickSeries, {
+      upColor: "#039d63",
+      downColor: "#ce484b",
+      borderVisible: true,
+      wickUpColor: "#039d63",
+      wickDownColor: "#ce484b",
+      priceFormat: { type: "price", precision: 2, minMove: 0.01 },
+    });
   }
 
   private transformData(candle: Candle) {
@@ -129,6 +154,10 @@ export class ChartManager {
         low: candle.low,
         close: candle.close,
       },
+      linePoint: {
+        time,
+        value: candle.close,
+      },
       volumePoint: {
         time,
         value: candle.volume,
@@ -140,23 +169,52 @@ export class ChartManager {
   }
 
   public setData(data: Candle[]) {
+    this.data = data;
+
     const candleData: any[] = [];
+    const lineData: any[] = [];
     const volumeData: any[] = [];
 
     for (const item of data) {
-      const { candlePoint, volumePoint } = this.transformData(item);
+      const { candlePoint, linePoint, volumePoint } = this.transformData(item);
       candleData.push(candlePoint);
+      lineData.push(linePoint);
       volumeData.push(volumePoint);
     }
 
-    this.candleSeries.setData(candleData);
+    this.priceSeries.setData(
+      this.seriesType === "line" ? lineData : candleData,
+    );
     this.volumeSeries.setData(volumeData);
   }
 
   public update(candle: Candle) {
-    const { candlePoint, volumePoint } = this.transformData(candle);
-    this.candleSeries.update(candlePoint);
+    // Keep a running copy so switching series type later has data to redraw with.
+    const idx = this.data.findIndex(
+      (d) =>
+        Math.floor(d.timestamp / 1000) === Math.floor(candle.timestamp / 1000),
+    );
+    if (idx >= 0) this.data[idx] = candle;
+    else this.data.push(candle);
+
+    const { candlePoint, linePoint, volumePoint } = this.transformData(candle);
+    this.priceSeries.update(
+      this.seriesType === "line" ? linePoint : (candlePoint as any),
+    );
     this.volumeSeries.update(volumePoint);
+  }
+
+  public setSeriesType(type: SeriesType) {
+    if (type === this.seriesType) return;
+
+    this.chart.removeSeries(this.priceSeries as any);
+    this.seriesType = type;
+    this.priceSeries = this.createPriceSeries(type);
+    this.setData(this.data);
+  }
+
+  public getSeriesType(): SeriesType {
+    return this.seriesType;
   }
 
   public fitContent() {

@@ -2,16 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowUpRight,
-  ArrowDownRight,
-  Search,
-  ChevronRight,
-} from "lucide-react";
 import { getTickers, getKlines } from "@/lib/utils/apiClient";
 import type { Ticker } from "@exchange-lab/shared";
 import { Sparkline } from "@/components/markets/Sparkline";
-import { Banner } from "@/components/banner";
+import { Search, ArrowUpRight, ChevronRight } from "lucide-react";
+import { Banner, CoinDropIllustration } from "@/components/banner";
 
 export default function MarketsPage() {
   const router = useRouter();
@@ -36,9 +31,19 @@ export default function MarketsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
       <Banner
-        image="/banner.png"
-        title="Wire Transfers Are Live"
-        subtitle="Deposit and withdraw INR. Stake BP or trade for more free wires."
+        title={
+          <>
+            ₹50,000{" "}
+            <span className="text-[var(--brand-cyan)]">
+              Free Practice Balance
+            </span>
+            <br />+ Exclusive Coindrop
+          </>
+        }
+        subtitle="Create your account today to claim your free practice balance and receive instant stock rewards to start trading risk-free."
+        buttonText="Claim Now"
+        rightGraphic={<CoinDropIllustration />}
+        onClick={() => {}}
       />
 
       {/* Featured cards */}
@@ -151,7 +156,7 @@ function MarketCard({
 
       <div
         className={`mt-1 flex w-fit items-center gap-1 text-sm ${
-          isUp ? "text-emerald-400" : "text-red-400"
+          isUp ? "text-emerald-500" : "text-red-500"
         }`}>
         {isUp ? (
           <ArrowUpRight className="size-4" />
@@ -214,7 +219,7 @@ function MarketRow({
       <td className="px-6 py-4 text-right">
         <span
           className={`inline-flex items-center justify-end gap-1 ${
-            isUp ? "text-emerald-400" : "text-red-400"
+            isUp ? "text-emerald-500" : "text-red-500"
           }`}>
           {isUp ? (
             <ArrowUpRight className="size-4" />

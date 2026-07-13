@@ -9,21 +9,23 @@ import { Search, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Banner, CoinDropIllustration } from "@/components/banner";
 
-const BADGE_COLORS = [
-  "bg-indigo-500",
-  "bg-amber-500",
-  "bg-emerald-500",
-  "bg-sky-500",
-  "bg-fuchsia-500",
-  "bg-rose-500",
+// Muted, translucent palette — mirrors the P&L pill treatment
+// (bg-emerald-500/10 text-emerald-500) instead of solid saturated fills.
+const BADGE_PALETTE = [
+  { bg: "bg-[var(--brand-cyan)]/10", text: "text-[var(--brand-cyan)]" },
+  { bg: "bg-[var(--brand-blue)]/10", text: "text-[var(--brand-blue)]" },
+  { bg: "bg-violet-500/10", text: "text-violet-400" },
+  { bg: "bg-teal-500/10", text: "text-teal-400" },
+  { bg: "bg-amber-500/10", text: "text-amber-400" },
+  { bg: "bg-rose-500/10", text: "text-rose-400" },
 ];
 
-function badgeColor(symbol: string) {
+function badgeStyle(symbol: string) {
   let hash = 0;
   for (let i = 0; i < symbol.length; i++) {
     hash = symbol.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return BADGE_COLORS[Math.abs(hash) % BADGE_COLORS.length];
+  return BADGE_PALETTE[Math.abs(hash) % BADGE_PALETTE.length];
 }
 
 export default function MarketsPage() {
@@ -171,6 +173,7 @@ function MarketCard({
   const change = parseFloat(ticker.priceChangePercent);
   const isUp = change >= 0;
   const [base] = ticker.symbol.split("_");
+  const badge = badgeStyle(ticker.symbol);
 
   useEffect(() => {
     const endTime = Date.now();
@@ -187,9 +190,7 @@ function MarketCard({
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white ${badgeColor(
-              ticker.symbol,
-            )}`}>
+            className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${badge.bg} ${badge.text}`}>
             {base.slice(0, 1)}
           </span>
           <span className="truncate text-sm font-medium text-foreground">
@@ -225,7 +226,7 @@ function MarketCard({
 
 function MarketCardSkeleton() {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-4">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-white/5 px-4 py-4">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <div className="size-6 shrink-0 animate-pulse rounded-full bg-muted/40" />
@@ -252,6 +253,7 @@ function MarketRow({
   const change = parseFloat(ticker.priceChangePercent);
   const isUp = change >= 0;
   const [base] = ticker.symbol.split("_");
+  const badge = badgeStyle(ticker.symbol);
 
   useEffect(() => {
     const endTime = Date.now();
@@ -266,7 +268,13 @@ function MarketRow({
       onClick={onClick}
       className="group cursor-pointer transition-colors hover:bg-muted/30">
       <td className="px-6 py-5">
-        <span className="font-medium text-foreground">{base}</span>
+        <div className="flex items-center gap-2.5">
+          <span
+            className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${badge.bg} ${badge.text}`}>
+            {base.slice(0, 1)}
+          </span>
+          <span className="font-medium text-foreground">{base}</span>
+        </div>
       </td>
       <td className="px-6 py-5 text-right font-medium text-foreground">
         ${ticker.lastPrice}

@@ -1,58 +1,92 @@
-import { Mail, Github, Linkedin, Globe } from "lucide-react";
 import Link from "next/link";
+import { ArrowUpRight, Github, Globe, Linkedin, Mail } from "lucide-react";
+
+const links = [
+  {
+    href: "mailto:mail@viveksahu.com",
+    label: "Email",
+    value: "mail@viveksahu.com",
+    icon: Mail,
+  },
+  {
+    href: "https://github.com/vivek-src",
+    label: "GitHub",
+    value: "vivek-src",
+    icon: Github,
+  },
+  {
+    href: "https://www.linkedin.com/in/vivek-src/",
+    label: "LinkedIn",
+    value: "vivek-src",
+    icon: Linkedin,
+  },
+  {
+    href: "https://viveksahu.com",
+    label: "Website",
+    value: "viveksahu.com",
+    icon: Globe,
+  },
+];
 
 export default function ContactCard() {
   return (
-    <section className="container max-w-4xl mx-auto px-6 pb-24 text-center">
-      <div className="rounded-3xl border border-border/60 bg-card/40 backdrop-blur-sm p-10 shadow-sm transition-all">
-        <h2 className="text-3xl font-semibold text-foreground mb-4">
-          Let’s <span className="text-blue-500">Connect</span> & Discuss Systems
-        </h2>
+    <section className="w-full">
+      <div className="border-t border-border">
+        <div className="grid md:grid-cols-2">
+          {/* Left */}
+          <div className="border-b border-border p-10 md:border-b-0 md:border-r">
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              Contact
+            </p>
 
-        <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8">
-          XCHG Lab is a learning-focused exchange project built to understand
-          order books, matching engines, and trade execution at a deeper level.
-          If you have feedback, questions, or want to talk about exchange
-          internals, I’d be happy to connect.
-        </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+              Let's build better systems.
+            </h2>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-6 mt-4">
-          <Link
-            href="mailto:in.viveksahu@gmail.com"
-            className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card/20 px-4 py-2 text-sm text-blue-500 hover:text-blue-300 hover:bg-card/40 transition">
-            <Mail className="w-4 h-4" /> Email
-          </Link>
+            <p className="mt-6 max-w-md leading-8 text-muted-foreground">
+              XCHG Lab is an exchange infrastructure project built to understand
+              the architecture behind modern electronic exchanges. If you'd like
+              to discuss distributed systems, matching engines, or have feedback
+              on the project, I'd be happy to connect.
+            </p>
+          </div>
 
-          <Link
-            href="https://github.com/viveek-sh"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card/20 px-4 py-2 text-sm text-blue-500 hover:text-blue-300 hover:bg-card/40 transition">
-            <Github className="w-4 h-4" /> GitHub
-          </Link>
+          {/* Right */}
+          <div>
+            {links.map((item, index) => {
+              const Icon = item.icon;
 
-          <Link
-            href="https://www.linkedin.com/in/viveek-sh/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card/20 px-4 py-2 text-sm text-blue-500 hover:text-blue-300 hover:bg-card/40 transition">
-            <Linkedin className="w-4 h-4" /> LinkedIn
-          </Link>
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  target={item.href.startsWith("http") ? "_blank" : undefined}
+                  rel={
+                    item.href.startsWith("http")
+                      ? "noopener noreferrer"
+                      : undefined
+                  }
+                  className={`group flex items-center justify-between px-8 py-7 transition-colors hover:bg-muted/30 ${
+                    index !== links.length - 1 ? "border-b border-border" : ""
+                  }`}>
+                  <div className="flex items-center gap-5">
+                    <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
 
-          <Link
-            href="https://viveksahu.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-lg border border-border bg-card/20 px-4 py-2 text-sm text-blue-500 hover:text-indigo-300 hover:bg-card/40 transition">
-            <Globe className="w-4 h-4" /> viveksahu.dev
-          </Link>
+                    <div>
+                      <p className="font-medium">{item.label}</p>
+
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {item.value}
+                      </p>
+                    </div>
+                  </div>
+
+                  <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground" />
+                </Link>
+              );
+            })}
+          </div>
         </div>
-
-        <p className="text-sm text-muted-foreground mt-10 max-w-xl mx-auto">
-          This project is experimental and not a production exchange. The core
-          matching logic and order book implementation will remain open for
-          learning and iteration as the system evolves.
-        </p>
       </div>
     </section>
   );

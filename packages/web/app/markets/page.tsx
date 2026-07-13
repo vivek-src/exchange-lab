@@ -5,8 +5,26 @@ import { useRouter } from "next/navigation";
 import { getTickers, getKlines } from "@/lib/utils/apiClient";
 import type { Ticker } from "@exchange-lab/shared";
 import { Sparkline } from "@/components/markets/Sparkline";
-import { Search, ArrowUpRight, ChevronRight } from "lucide-react";
+import { Search, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Banner, CoinDropIllustration } from "@/components/banner";
+
+const BADGE_COLORS = [
+  "bg-indigo-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+  "bg-sky-500",
+  "bg-fuchsia-500",
+  "bg-rose-500",
+];
+
+function badgeColor(symbol: string) {
+  let hash = 0;
+  for (let i = 0; i < symbol.length; i++) {
+    hash = symbol.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return BADGE_COLORS[Math.abs(hash) % BADGE_COLORS.length];
+}
 
 export default function MarketsPage() {
   const router = useRouter();
@@ -49,13 +67,13 @@ export default function MarketsPage() {
       {/* Featured cards */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Top Movers</h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {isLoading
-            ? Array.from({ length: 6 }).map((_, i) => (
+            ? Array.from({ length: 4 }).map((_, i) => (
                 <MarketCardSkeleton key={i} />
               ))
             : tickers
-                .slice(0, 6)
+                .slice(0, 4)
                 .map((t) => (
                   <MarketCard
                     key={t.symbol}
@@ -82,21 +100,16 @@ export default function MarketsPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm whitespace-nowrap">
               <thead>
-                <tr className="border-b border-border bg-muted/20 text-left text-muted-foreground">
-                  <th className="px-6 py-4 font-medium">Market</th>
-                  <th className="px-6 py-4 text-right font-medium">Price</th>
-                  <th className="px-6 py-4 text-right font-medium">
-                    24h Volume
-                  </th>
-                  <th className="px-6 py-4 text-right font-medium">
-                    24h Change
-                  </th>
-                  <th className="px-6 py-4 text-right font-medium">7d Trend</th>
-                  <th className="w-12 px-6 py-4" />
+                <tr className="text-left text-xs text-muted-foreground">
+                  <TableHeader label="Coin Name" />
+                  <TableHeader label="Coin Price" align="right" />
+                  <TableHeader label="24h Change" align="right" />
+                  <TableHeader label="24h Volume" align="right" />
+                  <TableHeader label="Chart" align="right" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -115,7 +128,7 @@ export default function MarketsPage() {
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={5}
                       className="px-6 py-12 text-center text-muted-foreground">
                       No markets found matching "{query}"
                     </td>
@@ -130,6 +143,23 @@ export default function MarketsPage() {
   );
 }
 
+function TableHeader({
+  label,
+  align = "left",
+}: {
+  label: string;
+  align?: "left" | "right";
+}) {
+  return (
+    <th
+      className={`px-6 py-4 font-medium ${
+        align === "right" ? "text-right" : "text-left"
+      }`}>
+      {label}
+    </th>
+  );
+}
+
 function MarketCard({
   ticker,
   onClick,
@@ -137,34 +167,57 @@ function MarketCard({
   ticker: Ticker;
   onClick: () => void;
 }) {
+  const [closes, setCloses] = useState<number[]>([]);
   const change = parseFloat(ticker.priceChangePercent);
   const isUp = change >= 0;
-  const [base, quote] = ticker.symbol.split("_");
+  const [base] = ticker.symbol.split("_");
+
+  useEffect(() => {
+    const endTime = Date.now();
+    const startTime = endTime - 7 * 24 * 60 * 60 * 1000;
+    getKlines(ticker.symbol, "1h", startTime, endTime)
+      .then((klines) => setCloses(klines.map((k) => Number(k.close))))
+      .catch(() => setCloses([]));
+  }, [ticker.symbol]);
 
   return (
     <button
       onClick={onClick}
-      className="group flex flex-col rounded-lg border border-border bg-card p-4 text-left transition-colors hover:border-[var(--brand-blue)]/50">
-      <div className="flex items-baseline gap-1">
-        <span className="font-semibold text-foreground">{base}</span>
-        <span className="text-xs text-muted-foreground">/{quote}</span>
+      className="group flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-4 text-left transition-colors hover:border-[var(--brand-blue)]/50">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <span
+            className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white ${badgeColor(
+              ticker.symbol,
+            )}`}>
+            {base.slice(0, 1)}
+          </span>
+          <span className="truncate text-sm font-medium text-foreground">
+            {base}
+          </span>
+        </div>
+
+        <div className="mt-2.5 flex items-baseline gap-2">
+          <span className="text-sm font-semibold text-foreground">
+            ${ticker.lastPrice}
+          </span>
+          <span
+            className={`flex items-center gap-0.5 text-xs font-medium ${
+              isUp ? "text-emerald-500" : "text-red-500"
+            }`}>
+            {isUp ? (
+              <ArrowUpRight className="size-3" />
+            ) : (
+              <ArrowDownRight className="size-3" />
+            )}
+            {isUp ? "+" : ""}
+            {ticker.priceChangePercent}%
+          </span>
+        </div>
       </div>
 
-      <div className="mt-2 text-lg font-semibold text-foreground">
-        ${ticker.lastPrice}
-      </div>
-
-      <div
-        className={`mt-1 flex w-fit items-center gap-1 text-sm ${
-          isUp ? "text-emerald-500" : "text-red-500"
-        }`}>
-        {isUp ? (
-          <ArrowUpRight className="size-4" />
-        ) : (
-          <ArrowDownRight className="size-4" />
-        )}
-        {isUp ? "+" : ""}
-        {ticker.priceChangePercent}%
+      <div className="h-10 w-20 shrink-0">
+        <Sparkline data={closes} />
       </div>
     </button>
   );
@@ -172,10 +225,18 @@ function MarketCard({
 
 function MarketCardSkeleton() {
   return (
-    <div className="flex flex-col rounded-lg border border-border bg-card p-4">
-      <div className="h-5 w-16 animate-pulse rounded bg-muted/40" />
-      <div className="mt-3 h-6 w-24 animate-pulse rounded bg-muted/40" />
-      <div className="mt-2 h-5 w-20 animate-pulse rounded bg-muted/40" />
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-4">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <div className="size-6 shrink-0 animate-pulse rounded-full bg-muted/40" />
+          <div className="h-4 w-16 animate-pulse rounded bg-muted/40" />
+        </div>
+        <div className="mt-2.5 flex items-baseline gap-2">
+          <div className="h-4 w-14 animate-pulse rounded bg-muted/40" />
+          <div className="h-3 w-10 animate-pulse rounded bg-muted/40" />
+        </div>
+      </div>
+      <div className="h-10 w-20 shrink-0 animate-pulse rounded bg-muted/40" />
     </div>
   );
 }
@@ -190,7 +251,7 @@ function MarketRow({
   const [closes, setCloses] = useState<number[]>([]);
   const change = parseFloat(ticker.priceChangePercent);
   const isUp = change >= 0;
-  const [base, quote] = ticker.symbol.split("_");
+  const [base] = ticker.symbol.split("_");
 
   useEffect(() => {
     const endTime = Date.now();
@@ -204,39 +265,36 @@ function MarketRow({
     <tr
       onClick={onClick}
       className="group cursor-pointer transition-colors hover:bg-muted/30">
-      <td className="px-6 py-4">
-        <div className="flex items-baseline gap-1">
-          <span className="font-medium text-foreground">{base}</span>
-          <span className="text-xs text-muted-foreground">/{quote}</span>
-        </div>
+      <td className="px-6 py-5">
+        <span className="font-medium text-foreground">{base}</span>
       </td>
-      <td className="px-6 py-4 text-right text-foreground">
+      <td className="px-6 py-5 text-right font-medium text-foreground">
         ${ticker.lastPrice}
       </td>
-      <td className="px-6 py-4 text-right text-muted-foreground">
-        {ticker.volume}
-      </td>
-      <td className="px-6 py-4 text-right">
-        <span
-          className={`inline-flex items-center justify-end gap-1 ${
-            isUp ? "text-emerald-500" : "text-red-500"
+      <td className="px-6 py-5 text-right">
+        <Badge
+          variant="outline"
+          className={`gap-1 rounded-full border-transparent px-2.5 py-1 text-xs font-medium ${
+            isUp
+              ? "bg-emerald-500/10 text-emerald-500"
+              : "bg-red-500/10 text-red-500"
           }`}>
-          {isUp ? (
-            <ArrowUpRight className="size-4" />
-          ) : (
-            <ArrowDownRight className="size-4" />
-          )}
           {isUp ? "+" : ""}
           {ticker.priceChangePercent}%
-        </span>
+          {isUp ? (
+            <ArrowUpRight className="size-3" />
+          ) : (
+            <ArrowDownRight className="size-3" />
+          )}
+        </Badge>
       </td>
-      <td className="px-6 py-4">
+      <td className="px-6 py-5 text-right text-muted-foreground">
+        {ticker.volume}
+      </td>
+      <td className="px-6 py-5">
         <div className="ml-auto w-24">
           <Sparkline data={closes} />
         </div>
-      </td>
-      <td className="px-6 py-4 text-right">
-        <ChevronRight className="ml-auto size-5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
       </td>
     </tr>
   );
@@ -245,22 +303,24 @@ function MarketRow({
 function MarketRowSkeleton() {
   return (
     <tr>
-      <td className="px-6 py-4">
-        <div className="h-5 w-20 animate-pulse rounded bg-muted/40" />
+      <td className="px-6 py-5">
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-16 animate-pulse rounded bg-muted/40" />
+          <div className="h-5 w-10 animate-pulse rounded bg-muted/40" />
+        </div>
       </td>
-      <td className="px-6 py-4 text-right">
-        <div className="ml-auto h-5 w-24 animate-pulse rounded bg-muted/40" />
+      <td className="px-6 py-5 text-right">
+        <div className="ml-auto h-4 w-20 animate-pulse rounded bg-muted/40" />
       </td>
-      <td className="px-6 py-4 text-right">
-        <div className="ml-auto h-5 w-20 animate-pulse rounded bg-muted/40" />
+      <td className="px-6 py-5 text-right">
+        <div className="ml-auto h-6 w-16 animate-pulse rounded-full bg-muted/40" />
       </td>
-      <td className="px-6 py-4 text-right">
-        <div className="ml-auto h-5 w-16 animate-pulse rounded bg-muted/40" />
+      <td className="px-6 py-5 text-right">
+        <div className="ml-auto h-4 w-16 animate-pulse rounded bg-muted/40" />
       </td>
-      <td className="px-6 py-4">
+      <td className="px-6 py-5">
         <div className="ml-auto h-8 w-24 animate-pulse rounded bg-muted/40" />
       </td>
-      <td className="px-6 py-4" />
     </tr>
   );
 }

@@ -125,13 +125,13 @@ export default async function OrdersPage({
                           </Badge>
                         </td>
                         <td className="px-6 py-5 text-right font-mono text-foreground">
-                          ${Number(order.price ?? 0).toFixed(2)}
+                          ₹{Number(order.price ?? 0).toFixed(2)}
                         </td>
                         <td className="px-6 py-5 text-right font-mono text-foreground">
                           {order.quantity ?? "—"}
                         </td>
                         <td className="px-6 py-5 text-right font-mono font-medium text-foreground">
-                          ${Number(order.amount).toFixed(2)}
+                          ₹{Number(order.amount).toFixed(2)}
                         </td>
                         <td className="px-6 py-5 text-muted-foreground">
                           {order.createdAt.toLocaleDateString("en-US", {

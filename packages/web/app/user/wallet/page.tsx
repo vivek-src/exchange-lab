@@ -71,7 +71,7 @@ export default async function WalletPage({
         <div className="rounded-2xl border border-border bg-card px-6 py-5">
           <p className="text-sm text-muted-foreground">Available Balance</p>
           <p className="mt-2 text-3xl font-semibold text-foreground">
-            $
+            ₹
             {Number(wallet.balance).toLocaleString("en-US", {
               minimumFractionDigits: 2,
             })}
@@ -81,7 +81,7 @@ export default async function WalletPage({
         <div className="rounded-2xl border border-border bg-card px-6 py-5">
           <p className="text-sm text-muted-foreground">Total Invested</p>
           <p className="mt-2 text-3xl font-semibold text-foreground">
-            $
+            ₹
             {totalInvested.toLocaleString("en-US", {
               minimumFractionDigits: 2,
             })}
@@ -162,11 +162,11 @@ export default async function WalletPage({
                               ? "text-emerald-500"
                               : "text-red-500"
                           }`}>
-                          {tx.type === "CREDIT" ? "+" : "-"}$
+                          {tx.type === "CREDIT" ? "+" : "-"}₹
                           {Number(tx.amount).toFixed(2)}
                         </td>
                         <td className="px-6 py-5 text-right font-mono text-muted-foreground">
-                          ${Number(tx.balanceAfter).toFixed(2)}
+                          ₹{Number(tx.balanceAfter).toFixed(2)}
                         </td>
                       </tr>
                     ))}

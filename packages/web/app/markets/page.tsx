@@ -54,14 +54,13 @@ export default function MarketsPage() {
         title={
           <>
             ₹50,000{" "}
-            <span className="text-[var(--brand-cyan)]">
-              Free Practice Balance
-            </span>
-            <br />+ Exclusive Coindrop
+            <span className="text-[var(--brand-cyan)]">Sandbox Capital</span>
+            <br />
+            +Seed Asset Allocation
           </>
         }
-        subtitle="Create your account today to claim your free practice balance and receive instant stock rewards to start trading risk-free."
-        buttonText="Claim Now"
+        subtitle="Interact with a live-synced matching engine. Claim your simulated balance and seed assets to explore order execution, latency, and real-time ledger updates."
+        buttonText="Register Now"
         rightGraphic={<CoinDropIllustration />}
         onClick={() => {}}
       />
@@ -200,7 +199,7 @@ function MarketCard({
 
         <div className="mt-2.5 flex items-baseline gap-2">
           <span className="text-sm font-semibold text-foreground">
-            ${ticker.lastPrice}
+            ₹{ticker.lastPrice}
           </span>
           <span
             className={`flex items-center gap-0.5 text-xs font-medium ${
@@ -277,7 +276,7 @@ function MarketRow({
         </div>
       </td>
       <td className="px-6 py-5 text-right font-medium text-foreground">
-        ${ticker.lastPrice}
+        ₹{ticker.lastPrice}
       </td>
       <td className="px-6 py-5 text-right">
         <Badge

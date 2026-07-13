@@ -65,7 +65,7 @@ export const MarketBar = ({ market }: { market: string }) => {
       : trend === "down"
         ? "text-red-500"
         : priceChangeNum >= 0
-          ? "text-green-500"
+          ? "text-emerald-500"
           : "text-red-500";
 
   return (
@@ -81,7 +81,7 @@ export const MarketBar = ({ market }: { market: string }) => {
           <div className="flex shrink-0 flex-col justify-center">
             <span
               className={`text-lg font-bold tabular-nums leading-tight transition-colors duration-300 ${trendColor}`}>
-              ${ticker?.lastPrice ?? "--"}
+              ₹{ticker?.lastPrice ?? "--"}
             </span>
 
             <span className={`text-xs tabular-nums leading-none ${trendColor}`}>

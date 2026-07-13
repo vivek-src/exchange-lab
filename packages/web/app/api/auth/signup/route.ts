@@ -40,9 +40,9 @@ export async function POST(req: NextRequest) {
           userId: user.id,
           balance: 50000,
           assetsHeld: {
-            VIVEK: 100, // Allotting 1,000 $VIVEK shares
-            TATA: 100, // Allotting 50 TATA shares
-            RIL: 100,
+            TATA: 50, // Allotting 50 TATA shares
+            RIL: 50, // Allotting 50 RIL shares
+            VIVEK: 50, // Allotting 50 $VIVEK shares
           },
         },
       });
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
           amount: 0,
           balanceAfter: 50000,
           ticker: "VIVEK",
-          quantity: 100,
+          quantity: 50,
         },
       });
 
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
           amount: 0,
           balanceAfter: 50000,
           ticker: "TATA",
-          quantity: 100,
+          quantity: 50,
         },
       });
 
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
           amount: 0,
           balanceAfter: 50000,
           ticker: "RIL",
-          quantity: 100,
+          quantity: 50,
         },
       });
 

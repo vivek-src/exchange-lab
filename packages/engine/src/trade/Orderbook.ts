@@ -41,7 +41,12 @@ export class Orderbook {
   getSnapshot() {
     return;
   }
-  addOrder(order: Order): { executedQty: number; fills: Fill[] } {
+  addOrder(
+    order: Order,
+    options: { rest?: boolean } = {},
+  ): { executedQty: number; fills: Fill[] } {
+    const shouldRest = options.rest ?? true;
+
     let finalExecutedQty = 0;
     let finalFills: Fill[] = [];
 
@@ -51,7 +56,7 @@ export class Orderbook {
       finalExecutedQty = executedQty;
       finalFills = fills;
 
-      if (executedQty < order.quantity) {
+      if (shouldRest && executedQty < order.quantity) {
         this.bids.push(order);
       }
     } else {
@@ -60,7 +65,7 @@ export class Orderbook {
       finalExecutedQty = executedQty;
       finalFills = fills;
 
-      if (executedQty < order.quantity) {
+      if (shouldRest && executedQty < order.quantity) {
         this.asks.push(order);
       }
     }
@@ -165,24 +170,21 @@ export class Orderbook {
     const asksObject: { [key: string]: number } = {};
 
     // Aggregating Bids of same price
-    for (let i = 0; i < this.bids.length; i++) {
-      const order = this.bids[i]!;
-      if (!bidsObject[order.price]) {
-        bidsObject[order.price] = 0;
-      }
-      const currentQty = bidsObject[order.price] || 0;
+    for (const order of this.bids) {
+      const remainingQty = order.quantity - order.filled;
 
-      bidsObject[order.price] = currentQty + order.quantity;
+      if (remainingQty <= 0) continue;
+
+      bidsObject[order.price] = (bidsObject[order.price] ?? 0) + remainingQty;
     }
 
     // Aggregating asks of same price
-    for (let i = 0; i < this.asks.length; i++) {
-      const order = this.asks[i]!;
-      if (!asksObject[order.price]) {
-        asksObject[order.price] = 0;
-      }
-      const currentQty = asksObject[order.price] || 0;
-      asksObject[order.price] = currentQty + order.quantity;
+    for (const order of this.asks) {
+      const remainingQty = order.quantity - order.filled;
+
+      if (remainingQty <= 0) continue;
+
+      asksObject[order.price] = (asksObject[order.price] ?? 0) + remainingQty;
     }
 
     // Formatting Return Array
@@ -200,20 +202,6 @@ export class Orderbook {
       asks,
     };
   }
-  // Relies directly on data hooked to map when matchign happens
-  //   getDepth() {
-  //     const bids: [string, string][] = [];
-  //     const asks: [string, string][] = [];
-  //     for (const [price, quantity] of Object.entries(this.bidDepthMap)) {
-  //         bids.push([price, quantity.toString()]);
-  //     }
-
-  //     for (const [price, quantity] of Object.entries(this.askDepthMap)) {
-  //         asks.push([price, quantity.toString()]);
-  //     }
-
-  //     return { bids, asks };
-  // }
   getOpenOrder(userId: string): Order[] {
     //Filer order with user ID and return to the user
     const asks = this.asks.filter((x) => x.userId === userId);

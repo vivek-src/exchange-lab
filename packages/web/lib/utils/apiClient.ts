@@ -1,5 +1,22 @@
 import axios from "axios";
-import type { Depth, KLine, Ticker, Trade } from "@exchange-lab/shared";
+import type {
+  DepthUpdateMessage,
+  KLine,
+  Ticker,
+  Trade,
+  EngineRequest,
+  EngineResponse,
+} from "@exchange-lab/shared";
+
+// Extract the exact types from your Engine definitions
+export type CreateOrderPayload = Extract<
+  EngineRequest,
+  { type: "CREATE_ORDER" }
+>["data"];
+export type OrderPlacedResponse = Extract<
+  EngineResponse,
+  { type: "ORDER_PLACED" }
+>["payload"];
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_REST_API_URL ?? "http://localhost:3001/api/v1";
@@ -23,21 +40,26 @@ export async function getTickers(): Promise<Ticker[]> {
 }
 
 export async function getTicker(market: string): Promise<Ticker> {
-  const tickers = await getTickers();
+  try {
+    const { data } = await api.get<Ticker[]>("/tickers", {
+      params: { market },
+    });
 
-  const ticker = tickers.find((ticker) => ticker.symbol === market);
+    if (!data.length) {
+      throw new Error(`Ticker not found for market: ${market}`);
+    }
 
-  if (!ticker) {
-    throw new Error(`Ticker not found for market: ${market}`);
+    return data[0];
+  } catch (error) {
+    console.error(`Failed to fetch ticker for ${market}:`, error);
+    throw error;
   }
-
-  return ticker;
 }
 
-export async function getDepth(market: string): Promise<Depth> {
-  const { data } = await api.get<Depth>("/depth", {
+export async function getDepth(market: string): Promise<DepthUpdateMessage> {
+  const { data } = await api.get<DepthUpdateMessage>("/depth", {
     params: {
-      symbol: market,
+      market,
     },
   });
 
@@ -47,7 +69,7 @@ export async function getDepth(market: string): Promise<Depth> {
 export async function getTrades(market: string): Promise<Trade[]> {
   const { data } = await api.get<Trade[]>("/trades", {
     params: {
-      symbol: market,
+      market,
     },
   });
 
@@ -70,4 +92,45 @@ export async function getKlines(
   });
 
   return data.sort((a, b) => Number(a.end) - Number(b.end));
+}
+
+// Added placeOrder without touching the original Axios config
+export async function placeOrder(
+  payload: CreateOrderPayload,
+): Promise<OrderPlacedResponse> {
+  const { data } = await api.post<OrderPlacedResponse>("/order", payload, {
+    timeout: 20_000,
+  });
+  return data;
+}
+
+export async function getOpenOrders(
+  userId: string,
+  market: string,
+): Promise<Extract<EngineResponse, { type: "OPEN_ORDERS" }>["payload"]> {
+  const { data } = await api.get<
+    Extract<EngineResponse, { type: "OPEN_ORDERS" }>["payload"]
+  >("/order/open", {
+    params: {
+      userId,
+      market,
+    },
+  });
+  return data;
+}
+
+export async function cancelOrder(
+  orderId: string,
+  market: string,
+): Promise<Extract<EngineResponse, { type: "ORDER_CANCELLED" }>["payload"]> {
+  const { data } = await api.delete<
+    Extract<EngineResponse, { type: "ORDER_CANCELLED" }>["payload"]
+  >("/order", {
+    // Axios requires body payloads for DELETE requests to be nested inside the `data` config property
+    data: {
+      orderId,
+      market,
+    },
+  });
+  return data;
 }

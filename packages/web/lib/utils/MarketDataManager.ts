@@ -41,9 +41,9 @@ export class MarketDataManager {
       try {
         const message = JSON.parse(event.data);
 
-        if (!message?.data?.e) return;
+        const type = message?.data?.e as EventType | undefined;
+        if (!type) return;
 
-        const type = message.data.e as EventType;
         const typeCallbacks = this.callbacks.get(type);
 
         if (!typeCallbacks || typeCallbacks.size === 0) return;
@@ -61,7 +61,12 @@ export class MarketDataManager {
             timestamp: message.data.T,
           } as Partial<Ticker>;
         } else if (type === "depth") {
+          const symbol =
+            typeof message?.stream === "string"
+              ? message.stream.split("@")[1]
+              : undefined;
           parsedPayload = {
+            symbol,
             bids: message.data.b,
             asks: message.data.a,
           };
@@ -74,38 +79,6 @@ export class MarketDataManager {
         console.error("Error parsing WebSocket message:", error);
       }
     };
-    // this.ws.onmessage = (event) => {
-    //   try {
-    //     const message = JSON.parse(event.data);
-
-    //     if (!message?.data?.e) return;
-
-    //     const type = message.data.e as EventType;
-    //     const typeCallbacks = this.callbacks.get(type);
-
-    //     if (!typeCallbacks || typeCallbacks.size === 0) return;
-
-    //     let parsedPayload: any = null;
-
-    //     if (type === "trade") {
-    //       parsedPayload = {
-    //         lastPrice: message.data.p,
-    //         symbol: message.data.s,
-    //       } as Partial<Ticker>;
-    //     } else if (type === "depth") {
-    //       parsedPayload = {
-    //         bids: message.data.b,
-    //         asks: message.data.a,
-    //       };
-    //     }
-
-    //     if (parsedPayload) {
-    //       typeCallbacks.forEach((callback) => callback(parsedPayload));
-    //     }
-    //   } catch (error) {
-    //     console.error("Error parsing WebSocket message:", error);
-    //   }
-    // };
     this.ws.onclose = () => {
       console.warn("WebSocket disconnected. Attempting to reconnect...");
       // Simple auto-reconnect logic

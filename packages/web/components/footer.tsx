@@ -43,15 +43,15 @@ export default function Footer() {
           <div>
             <h4 className="mb-3 text-sm font-semibold">Connect</h4>
             <div className="flex gap-4">
-              <Link href="https://github.com/viveek-sh" target="_blank">
+              <Link href="https://github.com/vivek-src" target="_blank">
                 <Github className="h-5 w-5 text-muted-foreground hover:text-foreground" />
               </Link>
               <Link
-                href="https://www.linkedin.com/in/viveek-sh/"
+                href="https://www.linkedin.com/in/vivek-src/"
                 target="_blank">
                 <Linkedin className="h-5 w-5 text-muted-foreground hover:text-foreground" />
               </Link>
-              <Link href="https://x.com/viveek_sh" target="_blank">
+              <Link href="https://x.com/vivek_src" target="_blank">
                 <Twitter className="h-5 w-5 text-muted-foreground hover:text-foreground" />
               </Link>
             </div>

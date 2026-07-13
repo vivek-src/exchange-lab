@@ -12,17 +12,12 @@ export interface KLine {
 
 export interface Trade {
   id: number;
+  market: string;
   isBuyerMaker: boolean;
   price: string;
   quantity: string;
   quoteQuantity: string;
   timestamp: number;
-}
-
-export interface Depth {
-  bids: [string, string][];
-  asks: [string, string][];
-  lastUpdateId: string;
 }
 
 export interface Ticker {

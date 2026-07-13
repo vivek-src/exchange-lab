@@ -24,9 +24,7 @@ import { getTickers, getKlines } from "@/lib/utils/apiClient";
 import type { Ticker } from "@exchange-lab/shared";
 import { Sparkline } from "@/components/markets/Sparkline";
 
-// ---------------------------------------------------------------------------
 // Static content
-// ---------------------------------------------------------------------------
 
 const NAV_LINKS = [
   { label: "Markets", href: "/markets" },
@@ -80,9 +78,7 @@ const AVAILABLE_MARKETS = [
 
 const POLL_INTERVAL_MS = 5000;
 
-// ---------------------------------------------------------------------------
 // Formatting helpers
-// ---------------------------------------------------------------------------
 
 const priceFormatter = new Intl.NumberFormat("en-IN", {
   minimumFractionDigits: 2,
@@ -120,9 +116,7 @@ function extractTickers(response: unknown): Ticker[] | null {
   return null;
 }
 
-// ---------------------------------------------------------------------------
 // Ticker tape
-// ---------------------------------------------------------------------------
 
 type TapeItem = {
   symbol?: string;
@@ -192,10 +186,7 @@ function TickerTape({
   );
 }
 
-// ---------------------------------------------------------------------------
 // Market card
-// ---------------------------------------------------------------------------
-
 function MarketCard({
   symbol,
   name,
@@ -281,10 +272,7 @@ function MarketCard({
   );
 }
 
-// ---------------------------------------------------------------------------
 // Page
-// ---------------------------------------------------------------------------
-
 export default function LandingPage() {
   const [liveTickers, setLiveTickers] = useState<Ticker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -395,7 +383,7 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link href="/trades/RIL_INR">
+              <Link href="/trade/RIL_INR">
                 <Button className="h-11 rounded-md bg-[var(--brand-blue)] px-6 text-sm font-medium text-white shadow-lg shadow-[var(--brand-blue)]/20 hover:bg-[var(--brand-blue)]/90">
                   Start trading
                   <ArrowRight className="ml-2 size-4" />

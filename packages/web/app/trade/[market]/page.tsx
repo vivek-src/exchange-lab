@@ -18,16 +18,16 @@ export default function TradePage() {
 
   if (!market || typeof market !== "string") {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0a0a0a] text-white">
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
         Loading market...
       </div>
     );
   }
 
   return (
-    <div className="flex h-[100dvh] flex-col gap-2 bg-[#0a0a0a] p-2 lg:gap-2 lg:p-2">
+    <div className="flex h-[100dvh] flex-col gap-2 bg-background p-2 lg:gap-2 lg:p-2">
       {/* Top Market Info */}
-      <header className="relative z-10 h-14 shrink-0 rounded-xl border border-border/40 bg-[#121212] px-2">
+      <header className="relative z-10 h-14 shrink-0 rounded-xl border border-border bg-card px-2">
         <MarketBar market={market} />
       </header>
 
@@ -65,7 +65,7 @@ export default function TradePage() {
             order-3 h-[360px] w-full shrink-0 overflow-hidden
             lg:order-none lg:col-start-2 lg:row-start-1 lg:h-full lg:w-full
           ">
-          <div className="flex h-11 w-full shrink-0 items-center justify-start gap-6 border-b border-border/40 px-4">
+          <div className="flex h-11 w-full shrink-0 items-center justify-start gap-6 border-b border-border px-4">
             <button
               onClick={() => setActiveView("book")}
               className={`relative flex h-full items-center text-sm font-medium transition-colors focus:outline-none ${
@@ -75,7 +75,7 @@ export default function TradePage() {
               }`}>
               Order Book
               {activeView === "book" && (
-                <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-foreground" />
+                <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-[var(--brand-cyan)]" />
               )}
             </button>
 
@@ -88,7 +88,7 @@ export default function TradePage() {
               }`}>
               Trades
               {activeView === "trades" && (
-                <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-foreground" />
+                <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-[var(--brand-cyan)]" />
               )}
             </button>
           </div>
@@ -123,7 +123,7 @@ const Panel = ({
   className?: string;
 }) => (
   <section
-    className={`flex flex-col rounded-xl border border-border/40 bg-[#121212] ${className}`}>
+    className={`flex flex-col rounded-xl border border-border bg-card ${className}`}>
     {children}
   </section>
 );

@@ -24,6 +24,11 @@ const INTERVAL_MS: Record<Interval, number> = {
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "wss://localhost:8080/ws";
 
+// Kept as a literal hex because lightweight-charts takes a plain CSS color
+// string, not a Tailwind class — it can't consume var(--muted-foreground)
+// directly. Keep this in sync with that token's actual value manually.
+const CHART_TEXT_COLOR = "#8f949e";
+
 export function TVChart({ market }: { market: string }) {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartManagerRef = useRef<ChartManager | null>(null);
@@ -80,7 +85,7 @@ export function TVChart({ market }: { market: string }) {
           formattedData,
           {
             background: "transparent",
-            textColor: "#8f949e",
+            textColor: CHART_TEXT_COLOR,
             seriesType: chartType,
           },
         );
@@ -114,7 +119,7 @@ export function TVChart({ market }: { market: string }) {
       dataRef.current,
       {
         background: "transparent",
-        textColor: "#8f949e",
+        textColor: CHART_TEXT_COLOR,
         seriesType: chartType,
       },
     );
@@ -223,7 +228,7 @@ export function TVChart({ market }: { market: string }) {
               onClick={() => setInterval(iv)}
               className={`h-7 px-2 text-xs ${
                 iv === interval
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-[var(--brand-cyan)]/10 text-[var(--brand-cyan)]"
                   : "text-muted-foreground hover:text-foreground"
               }`}>
               {iv.toUpperCase()}
@@ -239,7 +244,7 @@ export function TVChart({ market }: { market: string }) {
             aria-label="Candlestick chart"
             className={`h-7 w-7 p-0 ${
               chartType === "candlestick"
-                ? "bg-primary/10 text-primary"
+                ? "bg-[var(--brand-cyan)]/10 text-[var(--brand-cyan)]"
                 : "text-muted-foreground hover:text-foreground"
             }`}>
             <CandlestickChart className="h-4 w-4" />
@@ -251,7 +256,7 @@ export function TVChart({ market }: { market: string }) {
             aria-label="Line chart"
             className={`h-7 w-7 p-0 ${
               chartType === "line"
-                ? "bg-primary/10 text-primary"
+                ? "bg-[var(--brand-cyan)]/10 text-[var(--brand-cyan)]"
                 : "text-muted-foreground hover:text-foreground"
             }`}>
             <LineChart className="h-4 w-4" />

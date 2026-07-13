@@ -1,86 +1,12 @@
-// "use client";
-
-// import { useSession, signOut } from "next-auth/react";
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import { Badge } from "@/components/ui/badge";
-
-// export default function ProfilePage() {
-//   const { data: session } = useSession();
-
-//   if (!session?.user) return null;
-
-//   return (
-//     <div className="max-w-4xl mx-auto mt-10 space-y-6">
-//       {/* Header */}
-//       <Card>
-//         <CardContent className="flex items-center gap-6 p-6">
-//           <Avatar className="h-20 w-20">
-//             <AvatarImage src={session.user.image ?? ""} />
-//             <AvatarFallback>{session.user.name?.[0]}</AvatarFallback>
-//           </Avatar>
-
-//           <div>
-//             <h2 className="text-2xl font-bold">{session.user.name}</h2>
-//             <p className="text-muted-foreground">{session.user.email}</p>
-
-//             <div className="mt-2">
-//               <Badge variant="secondary">Demo Account</Badge>
-//             </div>
-//           </div>
-//         </CardContent>
-//       </Card>
-
-//       {/* Account Info */}
-//       <Card>
-//         <CardHeader>
-//           <CardTitle>Account Information</CardTitle>
-//         </CardHeader>
-//         <CardContent className="space-y-2 text-sm">
-//           <p>
-//             <span className="font-medium">User ID:</span> {session.user.id}
-//           </p>
-//           <p>
-//             <span className="font-medium">Member Since:</span>{" "}
-//             {/* Replace with createdAt if you expose it */}
-//             2025
-//           </p>
-//         </CardContent>
-//       </Card>
-
-//       {/* Security */}
-//       <Card>
-//         <CardHeader>
-//           <CardTitle>Security</CardTitle>
-//         </CardHeader>
-//         <CardContent className="space-y-4">
-//           <Button variant="outline">Change Password</Button>
-//           <Button variant="outline">Enable 2FA (Coming Soon)</Button>
-//         </CardContent>
-//       </Card>
-
-//       {/* Danger Zone */}
-//       <Card className="border-red-500/40">
-//         <CardHeader>
-//           <CardTitle className="text-red-600">Danger Zone</CardTitle>
-//         </CardHeader>
-//         <CardContent>
-//           <Button variant="destructive" onClick={() => signOut()}>
-//             Logout
-//           </Button>
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// }
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth"; // your NextAuth config
 import { prisma } from "@exchange-lab/db";
 import { redirect } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CheckCircle2, XCircle, Clock } from "lucide-react";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -111,74 +37,112 @@ export default async function ProfilePage() {
       .slice(0, 2);
   };
 
+  const walletBalance = user.wallet
+    ? Number(user.wallet.balance).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+      })
+    : "0.00";
+
+  const memberSince = new Date(user.createdAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Profile Header */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="w-20 h-20">
-                <AvatarImage src={user.image ?? undefined} />
-                <AvatarFallback className="text-2xl">
-                  {getInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold">{user.name || "User"}</h1>
-                <p className="text-muted-foreground">{user.email}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Member since {new Date(user.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-              <Button variant="outline">Edit Profile</Button>
+    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
+      {/* Profile Header */}
+      <Card className="rounded-2xl border border-border bg-card">
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+            <Avatar className="size-20 border border-border">
+              <AvatarImage src={user.image ?? undefined} />
+              <AvatarFallback className="bg-[var(--brand-cyan)]/10 text-2xl font-semibold text-[var(--brand-cyan)]">
+                {getInitials(user.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 text-center sm:text-left">
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                {user.name || "User"}
+              </h1>
+              <p className="text-muted-foreground">{user.email}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Member since {memberSince}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <Button variant="outline" disabled>
+              Edit Profile
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Wallet Balance */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Wallet Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              ${user.wallet?.balance.toString() || "0.00"}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Wallet Balance */}
+      <Card className="rounded-2xl border border-border bg-card">
+        <CardHeader>
+          <CardTitle className="text-foreground">Wallet Balance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-semibold tracking-tight text-foreground">
+            ₹{walletBalance}
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Account Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-muted-foreground">Email Verified</span>
-              <span
-                className={
-                  user.emailVerified ? "text-green-600" : "text-red-600"
-                }>
-                {user.emailVerified ? "Yes" : "No"}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-muted-foreground">Account Status</span>
-              <span
-                className={
-                  user.isVerified ? "text-green-600" : "text-yellow-600"
-                }>
-                {user.isVerified ? "Verified" : "Pending"}
-              </span>
-            </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-muted-foreground">Account ID</span>
-              <span className="font-mono text-sm">{user.id}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Account Details */}
+      <Card className="rounded-2xl border border-border bg-card">
+        <CardHeader>
+          <CardTitle className="text-foreground">Account Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          <div className="flex items-center justify-between border-b border-border py-3">
+            <span className="text-sm text-muted-foreground">
+              Email Verified
+            </span>
+            {user.emailVerified ? (
+              <Badge
+                variant="outline"
+                className="gap-1 rounded-full border-transparent bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-500">
+                <CheckCircle2 className="size-3" />
+                Yes
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="gap-1 rounded-full border-transparent bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-500">
+                <XCircle className="size-3" />
+                No
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center justify-between border-b border-border py-3">
+            <span className="text-sm text-muted-foreground">
+              Account Status
+            </span>
+            {user.isVerified ? (
+              <Badge
+                variant="outline"
+                className="gap-1 rounded-full border-transparent bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-500">
+                <CheckCircle2 className="size-3" />
+                Verified
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className="gap-1 rounded-full border-transparent bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-500">
+                <Clock className="size-3" />
+                Pending
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center justify-between py-3">
+            <span className="text-sm text-muted-foreground">Account ID</span>
+            <span className="font-mono text-sm text-foreground">
+              {user.id.slice(0, 8)}…
+            </span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

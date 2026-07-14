@@ -203,15 +203,15 @@ export function OrderEntry({ market }: OrderEntryProps) {
           setType(v as "limit" | "market");
           resetFeedback();
         }}>
-        <TabsList className="grid w-full grid-cols-2 bg-[#1a1a1a]">
+        <TabsList className="grid w-full grid-cols-2 bg-muted/30">
           <TabsTrigger
             value="limit"
-            className="text-muted-foreground data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white">
+            className="text-muted-foreground data-[state=active]:bg-[var(--brand-cyan)]/10 data-[state=active]:text-[var(--brand-cyan)]">
             Limit
           </TabsTrigger>
           <TabsTrigger
             value="market"
-            className="text-muted-foreground data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-white">
+            className="text-muted-foreground data-[state=active]:bg-[var(--brand-cyan)]/10 data-[state=active]:text-[var(--brand-cyan)]">
             Market
           </TabsTrigger>
         </TabsList>
@@ -287,19 +287,19 @@ export function OrderEntry({ market }: OrderEntryProps) {
           {resultMessage() && <Banner tone="success" text={resultMessage()!} />}
 
           {isLoading ? (
-            <Button disabled className="h-11 w-full bg-white/5">
+            <Button disabled className="h-11 w-full bg-muted/20">
               Loading...
             </Button>
           ) : !session ? (
             <div className="flex flex-col gap-2">
               <Button
                 variant="outline"
-                className="h-11 w-full border-border/40 font-semibold hover:bg-white/5"
+                className="h-11 w-full border-border font-semibold hover:bg-muted/20"
                 onClick={() => signIn()}>
                 Log In
               </Button>
               <Button
-                className="h-11 w-full bg-white font-semibold text-black hover:bg-white/90"
+                className="h-11 w-full bg-[var(--brand-cyan)] font-semibold text-black hover:bg-[var(--brand-cyan)]/90"
                 onClick={() => signIn()}>
                 Sign Up
               </Button>
@@ -335,13 +335,13 @@ function SideToggle({
 }) {
   const isBuy = side === "buy";
   return (
-    <div className="grid grid-cols-2 gap-1 rounded-lg bg-[#1a1a1a] p-1">
+    <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted/30 p-1">
       <button
         onClick={() => onChange("buy")}
         className={`h-9 rounded-md text-sm font-semibold transition-colors ${
           isBuy
             ? "bg-emerald-500/20 text-emerald-500"
-            : "text-muted-foreground hover:text-white"
+            : "text-muted-foreground hover:text-foreground"
         }`}>
         Buy
       </button>
@@ -350,7 +350,7 @@ function SideToggle({
         className={`h-9 rounded-md text-sm font-semibold transition-colors ${
           !isBuy
             ? "bg-red-500/20 text-red-500"
-            : "text-muted-foreground hover:text-white"
+            : "text-muted-foreground hover:text-foreground"
         }`}>
         Sell
       </button>
@@ -380,7 +380,7 @@ function AmountField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="pr-14 border-transparent bg-white/[0.04] focus-visible:ring-1 focus-visible:ring-white/20"
+          className="pr-14 border-transparent bg-muted/20 focus-visible:ring-1 focus-visible:ring-[var(--brand-blue)]/50"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
           {suffix}
@@ -419,7 +419,7 @@ function AvailableRow({
         <button
           type="button"
           onClick={onMax}
-          className="font-medium text-white/70 hover:text-white">
+          className="font-medium text-muted-foreground hover:text-foreground">
           Max
         </button>
       )}
@@ -429,11 +429,11 @@ function AvailableRow({
 
 function SummaryBox({ rows }: { rows: { label: string; value: string }[] }) {
   return (
-    <div className="space-y-1.5 rounded-lg bg-[#1a1a1a] p-3 text-sm">
+    <div className="space-y-1.5 rounded-lg bg-muted/30 p-3 text-sm">
       {rows.map((row) => (
         <div key={row.label} className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">{row.label}</span>
-          <span className="font-medium">{row.value}</span>
+          <span className="font-medium text-foreground">{row.value}</span>
         </div>
       ))}
     </div>
@@ -451,7 +451,7 @@ function Banner({ tone, text }: { tone: "error" | "success"; text: string }) {
         <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
       )}
       <p
-        className={`text-xs leading-relaxed ${isError ? "text-red-300" : "text-emerald-300"}`}>
+        className={`text-xs leading-relaxed ${isError ? "text-red-500" : "text-emerald-500"}`}>
         {text}
       </p>
     </div>

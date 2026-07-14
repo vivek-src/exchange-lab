@@ -73,7 +73,7 @@ const NEW_STEPS = [
 const AVAILABLE_MARKETS = [
   { symbol: "RIL_INR", name: "Reliance Industries" },
   { symbol: "TATA_INR", name: "Tata Motors" },
-  { symbol: "VIVEK_INR", name: "Vivek" },
+  { symbol: "SOL_INR", name: "Solana" },
 ];
 
 const POLL_INTERVAL_MS = 5000;

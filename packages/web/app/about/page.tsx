@@ -36,9 +36,6 @@ const STACK = [
 ];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
-  // Matches the landing page's "Built for the desk" eyebrow treatment —
-  // small brand-cyan dash + mono uppercase label — instead of plain
-  // muted-foreground text with no accent.
   return (
     <div className="inline-flex items-center gap-3 font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
       <span className="h-px w-5 bg-[var(--brand-cyan)]" />

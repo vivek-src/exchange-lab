@@ -183,7 +183,7 @@ export function OrderEntry({ market }: OrderEntryProps) {
     if (remainingQty === 0) return `Filled ${executedQty} ${baseAsset}`;
     if (restingOnBook)
       return `Filled ${executedQty} ${baseAsset}, ${remainingQty} resting on the book`;
-    if (executedQty === 0) return "No liquidity available — order not filled";
+    if (executedQty === 0) return "No liquidity available - order not filled";
     return `Filled ${executedQty} ${baseAsset}, ${remainingQty} cancelled (no more liquidity within range)`;
   }
 

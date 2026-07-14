@@ -1,14 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import {
-  BookOpen,
-  Layers,
-  Zap,
-  Database,
-  Server,
-  Globe,
-  Box,
-} from "lucide-react";
+import { Layers, Zap, Database, Server, Globe, Box } from "lucide-react";
 
 const PACKAGES = [
   {
@@ -86,6 +78,20 @@ const API_ENDPOINTS = [
     description: "Retrieve 24-hour ticker statistics.",
   },
 ];
+const METHOD_STYLES: Record<string, string> = {
+  GET: "bg-emerald-500/10 text-emerald-500",
+  POST: "bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]",
+  DELETE: "bg-red-500/10 text-red-500",
+};
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="inline-flex items-center gap-3 font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
+      <span className="h-px w-5 bg-[var(--brand-cyan)]" />
+      {children}
+    </div>
+  );
+}
 
 export default function DocsPage() {
   return (
@@ -94,14 +100,10 @@ export default function DocsPage() {
 
       <section className="max-w-6xl">
         <div className="flex items-center gap-3">
-          <BookOpen className="size-5 text-muted-foreground" />
-
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Documentation
-          </p>
+          <Eyebrow>Documentation</Eyebrow>
         </div>
 
-        <h1 className="mt-5 text-4xl font-semibold tracking-tight">
+        <h1 className="mt-5 font-display text-4xl font-semibold tracking-tight">
           System Architecture
         </h1>
 
@@ -118,11 +120,9 @@ export default function DocsPage() {
 
       <section>
         <div className="max-w-6xl">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Overview
-          </p>
+          <Eyebrow>Overview</Eyebrow>
 
-          <h2 className="mt-3 text-2xl font-semibold">
+          <h2 className="mt-3 font-display text-2xl font-semibold">
             A modular exchange architecture.
           </h2>
 
@@ -142,11 +142,11 @@ export default function DocsPage() {
 
       <section>
         <div className="max-w-6xl">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Monorepo Packages
-          </p>
+          <Eyebrow>Monorepo Packages</Eyebrow>
 
-          <h2 className="mt-3 text-2xl font-semibold">Independent services.</h2>
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Independent services.
+          </h2>
 
           <p className="mt-6 leading-8 text-muted-foreground">
             Every package is responsible for a single concern, allowing the
@@ -161,11 +161,11 @@ export default function DocsPage() {
             return (
               <div
                 key={item.title}
-                className="rounded-xl border border-border p-6 transition-colors hover:bg-muted/30">
+                className="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-[var(--brand-blue)]/50">
                 <div className="flex items-center gap-3">
-                  <Icon className="size-5 text-muted-foreground" />
+                  <Icon className="size-5 text-[var(--brand-cyan)]" />
 
-                  <h3 className="font-medium">{item.title}</h3>
+                  <h3 className="font-medium text-foreground">{item.title}</h3>
                 </div>
 
                 <p className="mt-5 text-sm leading-7 text-muted-foreground">
@@ -183,11 +183,11 @@ export default function DocsPage() {
 
       <section>
         <div className="max-w-6xl">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Request Flow
-          </p>
+          <Eyebrow>Request Flow</Eyebrow>
 
-          <h2 className="mt-3 text-2xl font-semibold">Life of a trade.</h2>
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Life of a trade.
+          </h2>
         </div>
 
         <div className="mt-12 divide-y divide-border">
@@ -221,9 +221,9 @@ export default function DocsPage() {
             <div
               key={step}
               className="grid gap-5 py-8 md:grid-cols-[100px_220px_1fr]">
-              <span className="font-mono text-muted-foreground">{step}</span>
+              <span className="font-mono text-[var(--brand-cyan)]">{step}</span>
 
-              <h3 className="font-medium">{title}</h3>
+              <h3 className="font-medium text-foreground">{title}</h3>
 
               <p className="leading-7 text-muted-foreground">{desc}</p>
             </div>
@@ -236,11 +236,11 @@ export default function DocsPage() {
 
       <section>
         <div className="max-w-6xl">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            REST API
-          </p>
+          <Eyebrow>REST API</Eyebrow>
 
-          <h2 className="mt-3 text-2xl font-semibold">Public endpoints.</h2>
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Public endpoints.
+          </h2>
 
           <p className="mt-6 leading-8 text-muted-foreground">
             The REST API acts as the primary entry point for clients. It handles
@@ -249,7 +249,7 @@ export default function DocsPage() {
           </p>
         </div>
 
-        <div className="mt-14 rounded-xl border border-border overflow-hidden">
+        <div className="mt-14 rounded-2xl border border-border bg-card overflow-hidden">
           {API_ENDPOINTS.map((endpoint, index) => (
             <div
               key={endpoint.path + endpoint.method}
@@ -260,11 +260,14 @@ export default function DocsPage() {
               }`}>
               <Badge
                 variant="outline"
-                className="w-fit font-mono text-xs tracking-wide">
+                className={`w-fit gap-1 rounded-full border-transparent px-2.5 py-1 font-mono text-xs font-medium tracking-wide ${
+                  METHOD_STYLES[endpoint.method] ??
+                  "bg-muted/40 text-muted-foreground"
+                }`}>
                 {endpoint.method}
               </Badge>
 
-              <code className="text-sm">{endpoint.path}</code>
+              <code className="text-sm text-foreground">{endpoint.path}</code>
 
               <p className="text-sm text-muted-foreground">
                 {endpoint.description}
@@ -280,11 +283,11 @@ export default function DocsPage() {
 
       <section>
         <div className="max-w-6xl">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Database
-          </p>
+          <Eyebrow>Database</Eyebrow>
 
-          <h2 className="mt-3 text-2xl font-semibold">Persistent storage.</h2>
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Persistent storage.
+          </h2>
 
           <p className="mt-6 leading-8 text-muted-foreground">
             PostgreSQL stores user accounts, balances, orders, and transaction
@@ -323,7 +326,7 @@ export default function DocsPage() {
             <div
               key={item.title}
               className="grid gap-5 py-8 md:grid-cols-[220px_1fr]">
-              <h3 className="font-medium">{item.title}</h3>
+              <h3 className="font-medium text-foreground">{item.title}</h3>
 
               <p className="leading-7 text-muted-foreground">
                 {item.description}
@@ -339,11 +342,9 @@ export default function DocsPage() {
 
       <section>
         <div className="max-w-6xl">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Technology Stack
-          </p>
+          <Eyebrow>Technology Stack</Eyebrow>
 
-          <h2 className="mt-3 text-2xl font-semibold">
+          <h2 className="mt-3 font-display text-2xl font-semibold">
             Built with modern tools.
           </h2>
 
@@ -384,7 +385,7 @@ export default function DocsPage() {
             <div
               key={item.label}
               className="grid gap-5 py-8 md:grid-cols-[220px_1fr]">
-              <h3 className="font-medium">{item.label}</h3>
+              <h3 className="font-medium text-foreground">{item.label}</h3>
 
               <p className="leading-7 text-muted-foreground">{item.value}</p>
             </div>
@@ -397,7 +398,7 @@ export default function DocsPage() {
       {/* Footer */}
 
       <section className="max-w-6xl">
-        <h2 className="text-2xl font-semibold tracking-tight">
+        <h2 className="font-display text-2xl font-semibold tracking-tight">
           Engineering through implementation.
         </h2>
 

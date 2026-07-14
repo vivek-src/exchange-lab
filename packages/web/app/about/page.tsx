@@ -35,16 +35,26 @@ const STACK = [
   "WebSocket",
 ];
 
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  // Matches the landing page's "Built for the desk" eyebrow treatment —
+  // small brand-cyan dash + mono uppercase label — instead of plain
+  // muted-foreground text with no accent.
+  return (
+    <div className="inline-flex items-center gap-3 font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
+      <span className="h-px w-5 bg-[var(--brand-cyan)]" />
+      {children}
+    </div>
+  );
+}
+
 export default function AboutPage() {
   return (
     <main className="mx-auto max-w-7xl px-6 py-24">
       {/* Hero */}
       <section className="max-w-6xl">
-        <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-          About
-        </p>
+        <Eyebrow>About</Eyebrow>
 
-        <h1 className="mt-5 text-2xl font-semibold tracking-tight sm:text-2xl">
+        <h1 className="mt-5 font-display text-2xl font-semibold tracking-tight sm:text-2xl">
           Understanding exchange infrastructure by building it from scratch.
         </h1>
 
@@ -61,7 +71,7 @@ export default function AboutPage() {
             order book, market data pipeline, and trading interface—to explore
             how these components work together.
           </p>
-          <blockquote className="border-l border-border pl-5 italic text-foreground">
+          <blockquote className="border-l-2 border-[var(--brand-cyan)] pl-5 italic text-foreground">
             Build first. Understand every layer. Optimize later.
           </blockquote>
         </div>
@@ -70,11 +80,9 @@ export default function AboutPage() {
       {/* Engineering Focus */}
       <section className="mt-24 border-t border-border pt-16">
         <div className="max-w-3xl">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Engineering Focus
-          </p>
+          <Eyebrow>Engineering Focus</Eyebrow>
 
-          <h2 className="mt-3 text-2xl font-semibold">
+          <h2 className="mt-3 font-display text-2xl font-semibold">
             Core components of the project.
           </h2>
 
@@ -103,11 +111,9 @@ export default function AboutPage() {
       {/* Technology */}
       <section className="mt-24 border-t border-border pt-16">
         <div className="max-w-3xl">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Technology
-          </p>
+          <Eyebrow>Technology</Eyebrow>
 
-          <h2 className="mt-3 text-2xl font-semibold">
+          <h2 className="mt-3 font-display text-2xl font-semibold">
             Built with modern tools.
           </h2>
 
@@ -121,7 +127,7 @@ export default function AboutPage() {
         <div className="mt-12 grid grid-cols-2 gap-y-6 md:grid-cols-3 lg:grid-cols-4">
           {STACK.map((tech) => (
             <div key={tech}>
-              <span className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <span className="text-sm text-muted-foreground transition-colors hover:text-[var(--brand-cyan)]">
                 {tech}
               </span>
             </div>
@@ -132,11 +138,9 @@ export default function AboutPage() {
       {/* Project */}
       <section className="mt-24 border-t border-border pt-16">
         <div className="max-w-3xl">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-            Project
-          </p>
+          <Eyebrow>Project</Eyebrow>
 
-          <h2 className="mt-3 text-2xl font-semibold">
+          <h2 className="mt-3 font-display text-2xl font-semibold">
             Built from first principles.
           </h2>
 

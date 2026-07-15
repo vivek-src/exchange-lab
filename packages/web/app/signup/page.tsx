@@ -61,7 +61,8 @@ export default function SignUp() {
       const res = await api.post("/auth/signup", data);
       if (res.status === 201) {
         toast.success("Verification email sent", {
-          description: "Please check your inbox and verify your account.",
+          description:
+            "Please check your inbox / spam and verify your account.",
         });
 
         setTimeout(() => {

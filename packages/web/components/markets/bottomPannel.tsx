@@ -76,7 +76,9 @@ export function BottomPannel({ market }: { market: string }) {
   };
 
   return (
-    <section className="flex h-full flex-col rounded-xl bg-[#0e0e0e]">
+    // bg-transparent — this already renders inside a Panel that supplies
+    // bg-card + border-border, so no second background here.
+    <section className="flex h-full flex-col rounded-xl bg-transparent">
       {/* Tab row — flat, no border/card, matches Backpack style */}
       <div className="flex items-center gap-1 px-2 pt-2">
         {TABS.map((tab) => (
@@ -85,7 +87,7 @@ export function BottomPannel({ market }: { market: string }) {
             onClick={() => setActiveTab(tab.key)}
             className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               activeTab === tab.key
-                ? "bg-[#1f1f1f] text-foreground"
+                ? "bg-[var(--brand-cyan)]/10 text-[var(--brand-cyan)]"
                 : "text-muted-foreground hover:text-foreground"
             }`}>
             {tab.label}
@@ -120,11 +122,15 @@ function LoggedOutState() {
   return (
     <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
       Please{" "}
-      <a href="/login" className="mx-1 text-blue-400 hover:underline">
+      <a
+        href="/login"
+        className="mx-1 text-[var(--brand-cyan)] hover:underline">
         log in
       </a>{" "}
       or{" "}
-      <a href="/signup" className="mx-1 text-blue-400 hover:underline">
+      <a
+        href="/signup"
+        className="mx-1 text-[var(--brand-cyan)] hover:underline">
         sign up
       </a>{" "}
       first
@@ -143,7 +149,7 @@ function BalancesTab({
     return (
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-16 animate-pulse rounded-lg bg-[#1a1a1a]" />
+          <div key={i} className="h-16 animate-pulse rounded-lg bg-muted/40" />
         ))}
       </div>
     );
@@ -162,14 +168,14 @@ function BalancesTab({
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <div className="rounded-lg bg-[#1a1a1a] p-3">
+      <div className="rounded-lg bg-muted/20 p-3">
         <div className="text-xs text-muted-foreground">Balance (Quote)</div>
-        <div className="text-lg">{fmt(wallet?.balance, 2)}</div>
+        <div className="text-lg text-foreground">{fmt(wallet?.balance, 2)}</div>
       </div>
       {holdings.map(([asset, qty]) => (
-        <div key={asset} className="rounded-lg bg-[#1a1a1a] p-3">
+        <div key={asset} className="rounded-lg bg-muted/20 p-3">
           <div className="text-xs text-muted-foreground">{asset}</div>
-          <div className="text-lg">{fmt(qty)}</div>
+          <div className="text-lg text-foreground">{fmt(qty)}</div>
         </div>
       ))}
     </div>
@@ -193,7 +199,7 @@ function OrdersTab({
         {[...Array(3)].map((_, i) => (
           <div
             key={i}
-            className="h-8 w-full animate-pulse rounded bg-[#1a1a1a]"
+            className="h-8 w-full animate-pulse rounded bg-muted/40"
           />
         ))}
       </div>
@@ -211,7 +217,7 @@ function OrdersTab({
   return (
     <table className="w-full text-sm">
       <thead>
-        <tr className="border-b border-border/20 text-xs text-muted-foreground">
+        <tr className="border-b border-border text-xs text-muted-foreground">
           <th className="py-2 text-left">Side</th>
           <th className="py-2 text-left">Price</th>
           <th className="py-2 text-left">Quantity</th>
@@ -220,21 +226,21 @@ function OrdersTab({
       </thead>
       <tbody>
         {orders.map((order) => (
-          <tr key={order.orderId} className="border-b border-border/10">
+          <tr key={order.orderId} className="border-b border-border">
             <td
               className={`py-2.5 font-semibold ${
                 order.side === "buy" ? "text-emerald-500" : "text-red-500"
               }`}>
               {order.side.toUpperCase()}
             </td>
-            <td className="py-2.5 ">{fmt(order.price)}</td>
-            <td className="py-2.5">{fmt(order.quantity)}</td>
+            <td className="py-2.5 text-foreground">{fmt(order.price)}</td>
+            <td className="py-2.5 text-foreground">{fmt(order.quantity)}</td>
             <td className="py-2.5 text-right">
               <Button
                 size="sm"
                 disabled={cancellingId === order.orderId}
                 onClick={() => onCancel(order.orderId)}
-                className="h-7 bg-red-500/15 text-xs font-medium text-red-500 border border-red-500/30 hover:bg-red-500/25 hover:text-red-300 disabled:opacity-50">
+                className="h-7 border border-red-500/30 bg-red-500/15 text-xs font-medium text-red-500 hover:bg-red-500/25 hover:text-red-500 disabled:opacity-50">
                 {cancellingId === order.orderId ? "Cancelling…" : "Cancel"}
               </Button>
             </td>

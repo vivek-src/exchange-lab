@@ -1,125 +1,176 @@
-import { Separator } from "@/components/ui/separator";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PageHeader } from "@/components/pageHeader";
-import { Section } from "@/components/section";
 import ContactCard from "@/components/contactCard";
-import { FlaskConical, Zap, BarChart3 } from "lucide-react";
+
+const PRINCIPLES = [
+  {
+    title: "Matching Engine",
+    description:
+      "A deterministic price-time priority matching engine built from scratch using in-memory order books for predictable order execution.",
+  },
+  {
+    title: "Real-time Market Data",
+    description:
+      "Market depth, trades, and ticker updates are streamed over WebSockets with low-latency event delivery.",
+  },
+  {
+    title: "Persistent Storage",
+    description:
+      "Orders, trades, and historical market data are stored in PostgreSQL and TimescaleDB for analytics and charting.",
+  },
+  {
+    title: "Service-Oriented Design",
+    description:
+      "Independent services communicate through Redis to keep the platform modular, maintainable, and scalable.",
+  },
+];
+
+const STACK = [
+  "TypeScript",
+  "Node.js",
+  "Next.js",
+  "Express",
+  "Redis",
+  "PostgreSQL",
+  "TimescaleDB",
+  "Prisma",
+  "WebSocket",
+];
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="inline-flex items-center gap-3 font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
+      <span className="h-px w-5 bg-[var(--brand-cyan)]" />
+      {children}
+    </div>
+  );
+}
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-16 space-y-12">
-      {/* Intro */}
-      <Section>
-        <PageHeader
-          title="About XCHG LAB"
-          description="A personal project to explore exchange architecture from the inside out."
-        />
-      </Section>
+    <main className="mx-auto max-w-7xl px-6 py-24">
+      {/* Hero */}
+      <section className="max-w-6xl">
+        <Eyebrow>About</Eyebrow>
 
-      <Separator />
+        <h1 className="mt-5 font-display text-2xl font-semibold tracking-tight sm:text-2xl">
+          Understanding exchange infrastructure by building it from scratch.
+        </h1>
 
-      {/* The "Why" - Personal & Human */}
-      <Section className="space-y-6">
-        <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
+        <div className="mt-8 space-y-6 text-base leading-8 text-muted-foreground">
           <p>
-            I&apos;ve always been curious about what actually happens when you
-            click &quot;Buy&quot; on a trading app. Most of us see the charts
-            and the flashing prices, but the core engine that makes it all work
-            is usually a black box.
+            Most trading platforms expose charts, prices, and order forms while
+            the infrastructure underneath remains hidden.
           </p>
+
           <p>
-            <strong>XCHG LAB</strong> is my personal journey to peek under that
-            hood. I built this to learn the fundamentals of high-performance
-            systems-like real-time order matching and live books-by building
-            them from scratch rather than just using third-party APIs.
+            <span className="font-medium text-foreground">XCHG Lab</span> is an
+            exchange infrastructure project that rebuilds the core systems
+            behind a modern electronic exchange—including the matching engine,
+            order book, market data pipeline, and trading interface—to explore
+            how these components work together.
+          </p>
+          <blockquote className="border-l-2 border-[var(--brand-cyan)] pl-5 italic text-foreground">
+            Build first. Understand every layer. Optimize later.
+          </blockquote>
+        </div>
+      </section>
+
+      {/* Engineering Focus */}
+      <section className="mt-24 border-t border-border pt-16">
+        <div className="max-w-3xl">
+          <Eyebrow>Engineering Focus</Eyebrow>
+
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Core components of the project.
+          </h2>
+
+          <p className="mt-4 leading-7 text-muted-foreground">
+            Every subsystem is implemented independently to understand the
+            architecture behind modern electronic exchanges instead of relying
+            on third-party services.
           </p>
         </div>
 
-        <Alert className="bg-muted/50 border-none">
-          <FlaskConical className="h-4 w-4" />
-          <AlertDescription className="text-sm">
-            This is an educational prototype. It’s a space for me to experiment
-            with system design, concurrency, and real-time data.
-          </AlertDescription>
-        </Alert>
-      </Section>
+        <div className="mt-14 divide-y divide-border">
+          {PRINCIPLES.map((item) => (
+            <div
+              key={item.title}
+              className="grid gap-5 py-8 md:grid-cols-[240px_1fr]">
+              <h3 className="font-medium text-foreground">{item.title}</h3>
 
-      {/* Features - Clean Grid with shadcn Cards */}
-      <Section>
-        <Card className="border-muted bg-card/50">
-          <CardHeader>
-            <CardTitle>What I&apos;ve Built</CardTitle>
-            <CardDescription>The core pillars of the lab</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl border bg-background/50 space-y-2">
-                <div className="flex items-center gap-2 font-medium">
-                  <Zap className="h-4 w-4 text-yellow-500" />
-                  Matching Engine
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  A price-time priority engine that matches orders in memory for
-                  sub-millisecond execution.
-                </p>
-              </div>
-              <div className="p-4 rounded-xl border bg-background/50 space-y-2">
-                <div className="flex items-center gap-2 font-medium">
-                  <BarChart3 className="h-4 w-4 text-blue-500" />
-                  Live Order Book
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Real-time market depth updates using WebSockets to stream
-                  liquidity changes instantly.
-                </p>
-              </div>
+              <p className="leading-7 text-muted-foreground">
+                {item.description}
+              </p>
             </div>
+          ))}
+        </div>
+      </section>
 
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Badge variant="secondary" className="font-mono">
-                Node.js
-              </Badge>
-              <Badge variant="secondary" className="font-mono">
-                TypeScript
-              </Badge>
-              <Badge variant="secondary" className="font-mono">
-                Redis
-              </Badge>
-              <Badge variant="secondary" className="font-mono">
-                PostgreSQL
-              </Badge>
-              <Badge variant="secondary" className="font-mono">
-                Next.js
-              </Badge>
-              <Badge variant="secondary" className="font-mono">
-                Express
-              </Badge>
-              <Badge variant="secondary" className="font-mono">
-                Tailwind
-              </Badge>
-              <Badge variant="secondary" className="font-mono">
-                Git
-              </Badge>
-              <Badge variant="secondary" className="font-mono">
-                WebScoket
-              </Badge>
+      {/* Technology */}
+      <section className="mt-24 border-t border-border pt-16">
+        <div className="max-w-3xl">
+          <Eyebrow>Technology</Eyebrow>
+
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Built with modern tools.
+          </h2>
+
+          <p className="mt-4 leading-7 text-muted-foreground">
+            XCHG Lab is built using a modern TypeScript stack focused on
+            real-time communication, reliable persistence, and modular backend
+            services.
+          </p>
+        </div>
+
+        <div className="mt-12 grid grid-cols-2 gap-y-6 md:grid-cols-3 lg:grid-cols-4">
+          {STACK.map((tech) => (
+            <div key={tech}>
+              <span className="text-sm text-muted-foreground transition-colors hover:text-[var(--brand-cyan)]">
+                {tech}
+              </span>
             </div>
-          </CardContent>
-        </Card>
-      </Section>
+          ))}
+        </div>
+      </section>
 
-      {/* Contact / Socials */}
-      <div id="contact" className="scroll-mt-24">
-        <ContactCard />
-      </div>
+      {/* Project */}
+      <section className="mt-24 border-t border-border pt-16">
+        <div className="max-w-3xl">
+          <Eyebrow>Project</Eyebrow>
+
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Built from first principles.
+          </h2>
+
+          <div className="mt-6 space-y-6 leading-8 text-muted-foreground">
+            <p>
+              The matching engine, order book, market data streaming, historical
+              storage, and trading interface are all functional and continue to
+              evolve as new ideas are explored.
+            </p>
+
+            <p>
+              The goal isn't to replicate a commercial exchange
+              feature-for-feature, but to understand the engineering trade-offs
+              involved in building one from first principles.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section className="pt-16">
+        <div className="mt-12 scroll-mt-24" id="contact">
+          <ContactCard />
+        </div>
+        <div className="border-t border-border py-12">
+          <p className="max-w-6xl text-sm leading-7 text-muted-foreground">
+            XCHG Lab is an Experimental exchange infrastructure project focused
+            on exchange infrastructure, distributed systems, and low-latency
+            backend architecture. It is intended for research, experimentation,
+            and education rather than production trading.
+          </p>
+        </div>
+      </section>
     </main>
   );
 }

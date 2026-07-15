@@ -59,9 +59,12 @@ export const MarketBar = ({ market }: { market: string }) => {
   }, [market]);
 
   const priceChangeNum = Number(ticker?.priceChange ?? 0);
+  // emerald-500 matches the buy-side / positive-value color used
+  // everywhere else (OrderEntry, OrdersTab, P&L badges) — plain
+  // green-500 was a different hue for the same "up" meaning.
   const trendColor =
     trend === "up"
-      ? "text-green-500"
+      ? "text-emerald-500"
       : trend === "down"
         ? "text-red-500"
         : priceChangeNum >= 0
@@ -75,7 +78,7 @@ export const MarketBar = ({ market }: { market: string }) => {
           {/* Pair */}
           <MarketDisplay market={market} />
 
-          <Separator orientation="vertical" className="h-8 bg-border/40" />
+          <Separator orientation="vertical" className="h-8 bg-border" />
 
           {/* Price */}
           <div className="flex shrink-0 flex-col justify-center">
@@ -91,7 +94,7 @@ export const MarketBar = ({ market }: { market: string }) => {
             </span>
           </div>
 
-          <Separator orientation="vertical" className="h-8 bg-border/40" />
+          <Separator orientation="vertical" className="h-8 bg-border" />
 
           {/* Metrics */}
           <Metric label="24H High" value={ticker?.high ?? "--"} />

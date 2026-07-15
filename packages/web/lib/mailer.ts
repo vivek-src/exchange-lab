@@ -1,14 +1,24 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { prisma } from "@exchange-lab/db";
-import { MailtrapTransport } from "mailtrap";
 import crypto from "crypto";
-import { verifyEmailTemplate } from "@/lib/emails/verifyEmail";
-import { resetPassTemplate } from "./emails/resetPass";
+import { EmailTemplate } from "@/lib/emails/EmailTemplate";
 
 export enum EmailType {
   VERIFY = "VERIFY",
   RESET = "RESET",
 }
+
+const SENDER: Record<EmailType, string> = {
+  [EmailType.VERIFY]: "XCHG LAB <verifyemail@xchg.viveksahu.com>",
+  [EmailType.RESET]: "XCHG LAB Security <resetpass@xchg.viveksahu.com>",
+};
+
+const ACTION_PATH: Record<EmailType, string> = {
+  [EmailType.VERIFY]: "/verify",
+  [EmailType.RESET]: "/resetpass",
+};
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendEmail = async ({
   email,
@@ -39,39 +49,30 @@ export const sendEmail = async ({
         verifyTokenExp: new Date(Date.now() + 1000 * 60 * 20),
       },
     });
-    const MAIL_TOKEN = process.env.MAILTRAP_TOKEN;
-    const transporter = nodemailer.createTransport(
-      MailtrapTransport({
-        token: MAIL_TOKEN!,
-        sandbox: true,
-        testInboxId: 4437988,
-      }),
-    );
 
-    const verifyLink = `${process.env.NEXT_PUBLIC_BASE_URL}/verify?token=${rawToken}`;
-    const resetPassLink = `${process.env.NEXT_PUBLIC_BASE_URL}/resetpass?token=${rawToken}`;
-    const verifyHtml = verifyEmailTemplate({
-      verifyLink,
-      emailType,
-    });
-    const resetPassHtml = resetPassTemplate({
-      resetPassLink,
-      emailType,
-    });
-    await transporter.sendMail({
-      from: {
-        address: "mailer@xchglab.com",
-        name: "XCHG LAB",
-      },
+    const actionLink = `${process.env.NEXT_PUBLIC_BASE_URL}${ACTION_PATH[emailType]}?token=${rawToken}`;
+
+    const html = EmailTemplate({ actionLink, emailType });
+
+    const { data, error } = await resend.emails.send({
+      from: SENDER[emailType],
       to: email,
       subject:
         emailType === EmailType.VERIFY
           ? "Verify Your Email"
           : "Reset Your Password",
-      html: emailType === EmailType.VERIFY ? verifyHtml : resetPassHtml,
+      html,
     });
-  } catch (error: any) {
-    console.error(error);
+
+    if (error) {
+      console.error(error);
+      throw new Error("Email sending failed");
+    }
+
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(message);
     throw new Error("Email sending failed");
   }
 };

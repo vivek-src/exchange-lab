@@ -1,6 +1,6 @@
 import {
   CandlestickSeries,
-  LineSeries,
+  AreaSeries,
   ColorType,
   createChart,
   CrosshairMode,
@@ -30,8 +30,11 @@ export type SeriesType = "candlestick" | "line";
 export interface ChartOptions extends ChartTheme {
   seriesType?: SeriesType;
 }
+const BRAND_BLUE = "#3458ff";
+const UP_COLOR = "#10b981"; // Tailwind emerald-500 — same "buy"/positive color used app-wide
+const DOWN_COLOR = "#ef4444"; // Tailwind red-500 — same "sell"/negative color used app-wide
 
-type PriceSeries = ISeriesApi<"Candlestick", Time> | ISeriesApi<"Line", Time>;
+type PriceSeries = ISeriesApi<"Candlestick", Time> | ISeriesApi<"Area", Time>;
 
 export class ChartManager {
   private chart: IChartApi;
@@ -124,19 +127,23 @@ export class ChartManager {
 
   private createPriceSeries(type: SeriesType): PriceSeries {
     if (type === "line") {
-      return this.chart.addSeries(LineSeries, {
-        color: "#2F5AF5",
+      return this.chart.addSeries(AreaSeries, {
+        lineColor: BRAND_BLUE,
         lineWidth: 2,
+        topColor: "rgba(52, 88, 255, 0.28)",
+        bottomColor: "rgba(52, 88, 255, 0.02)",
         priceFormat: { type: "price", precision: 2, minMove: 0.01 },
       });
     }
 
     return this.chart.addSeries(CandlestickSeries, {
-      upColor: "#039d63",
-      downColor: "#ce484b",
+      upColor: UP_COLOR,
+      downColor: DOWN_COLOR,
       borderVisible: true,
-      wickUpColor: "#039d63",
-      wickDownColor: "#ce484b",
+      borderUpColor: UP_COLOR,
+      borderDownColor: DOWN_COLOR,
+      wickUpColor: UP_COLOR,
+      wickDownColor: DOWN_COLOR,
       priceFormat: { type: "price", precision: 2, minMove: 0.01 },
     });
   }
@@ -162,8 +169,8 @@ export class ChartManager {
         time,
         value: candle.volume,
         color: isUpCandle
-          ? "rgba(38, 166, 154, 0.25)"
-          : "rgba(239, 83, 80, 0.25)",
+          ? "rgba(16, 185, 129, 0.25)" // emerald-500 tint, matches UP_COLOR
+          : "rgba(239, 68, 68, 0.25)", // red-500 tint, matches DOWN_COLOR
       },
     };
   }

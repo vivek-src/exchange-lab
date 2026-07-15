@@ -1,124 +1,419 @@
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen } from "lucide-react";
+import { Layers, Zap, Database, Server, Globe, Box } from "lucide-react";
+
+const PACKAGES = [
+  {
+    title: "web",
+    icon: Globe,
+    description:
+      "Next.js frontend responsible for authentication, trading interface, charting, and communication with the REST API and WebSocket server.",
+  },
+  {
+    title: "api",
+    icon: Server,
+    description:
+      "Express API responsible for validating requests, managing accounts, and forwarding orders to the matching engine.",
+  },
+  {
+    title: "engine",
+    icon: Zap,
+    description:
+      "The core matching engine maintaining an in-memory order book with deterministic price-time priority execution.",
+  },
+  {
+    title: "ws",
+    icon: Layers,
+    description:
+      "WebSocket gateway broadcasting market depth, trades, ticker updates, and private user events.",
+  },
+  {
+    title: "db",
+    icon: Database,
+    description:
+      "Shared Prisma package providing typed access to PostgreSQL and TimescaleDB across every service.",
+  },
+  {
+    title: "shared",
+    icon: Box,
+    description:
+      "Shared TypeScript types, Redis payloads, WebSocket messages, and protocol definitions used throughout the monorepo.",
+  },
+];
+
+const API_ENDPOINTS = [
+  {
+    method: "POST",
+    path: "/api/v1/order",
+    description: "Place a new order.",
+  },
+  {
+    method: "DELETE",
+    path: "/api/v1/order",
+    description: "Cancel an active order.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/order/open",
+    description: "Retrieve open orders.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/depth",
+    description: "Fetch market depth.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/trades",
+    description: "Retrieve recent trades.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/klines",
+    description: "Retrieve OHLCV candle data.",
+  },
+  {
+    method: "GET",
+    path: "/api/v1/tickers",
+    description: "Retrieve 24-hour ticker statistics.",
+  },
+];
+const METHOD_STYLES: Record<string, string> = {
+  GET: "bg-emerald-500/10 text-emerald-500",
+  POST: "bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]",
+  DELETE: "bg-red-500/10 text-red-500",
+};
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="inline-flex items-center gap-3 font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
+      <span className="h-px w-5 bg-[var(--brand-cyan)]" />
+      {children}
+    </div>
+  );
+}
 
 export default function DocsPage() {
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <BookOpen className="size-6 text-muted-foreground" />
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Documentation
-          </h1>
-          <p className="text-sm text-muted-foreground">How XCHG Lab works</p>
-        </div>
-      </div>
+    <main className="mx-auto max-w-7xl px-6 py-20">
+      {/* Hero */}
 
-      <Separator />
+      <section className="max-w-6xl">
+        <div className="flex items-center gap-3">
+          <Eyebrow>Documentation</Eyebrow>
+        </div>
+
+        <h1 className="mt-5 font-display text-4xl font-semibold tracking-tight">
+          System Architecture
+        </h1>
+
+        <p className="mt-6 text-base leading-8 text-muted-foreground">
+          This document provides an overview of the architecture behind XCHG
+          Lab, including its services, request flow, persistence layer, and
+          communication between components.
+        </p>
+      </section>
+
+      <Separator className="my-20" />
 
       {/* Overview */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Overview</h2>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Exchange Lab is a simulated stock exchange built to understand how
-          real-world exchanges work under the hood. It is not connected to real
-          markets and uses virtual money only. The goal is to learn by doing —
-          place orders, watch them get matched, and track your portfolio in real
-          time.
-        </p>
+
+      <section>
+        <div className="max-w-6xl">
+          <Eyebrow>Overview</Eyebrow>
+
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            A modular exchange architecture.
+          </h2>
+
+          <p className="mt-6 leading-8 text-muted-foreground">
+            XCHG Lab is structured as a collection of independent services.
+            Orders flow through the REST API into the matching engine, execution
+            results are persisted in PostgreSQL and TimescaleDB, while Redis
+            distributes events to WebSocket services for real-time market
+            updates.
+          </p>
+        </div>
       </section>
 
-      <Separator />
+      <Separator className="my-20" />
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Getting Started
-        </h2>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Sign up with your email and password. Every new account is credited
-          with <span className="text-foreground font-medium">$50,000</span> in
-          virtual balance automatically. Once logged in, head to the trading
-          page, pick a ticker, and place your first order. When your order is
-          matched you will see it in your Orders page and your wallet balance
-          will update accordingly.
-        </p>
+      {/* Packages */}
+
+      <section>
+        <div className="max-w-6xl">
+          <Eyebrow>Monorepo Packages</Eyebrow>
+
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Independent services.
+          </h2>
+
+          <p className="mt-6 leading-8 text-muted-foreground">
+            Every package is responsible for a single concern, allowing the
+            system to remain modular while sharing common types and interfaces.
+          </p>
+        </div>
+
+        <div className="mt-14 grid gap-6 lg:grid-cols-3">
+          {PACKAGES.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-[var(--brand-blue)]/50">
+                <div className="flex items-center gap-3">
+                  <Icon className="size-5 text-[var(--brand-cyan)]" />
+
+                  <h3 className="font-medium text-foreground">{item.title}</h3>
+                </div>
+
+                <p className="mt-5 text-sm leading-7 text-muted-foreground">
+                  {item.description}
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
-      <Separator />
+      <Separator className="my-20" />
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Orderbook & Matching Engine
-        </h2>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          The orderbook lives entirely in memory. When you place an order it is
-          added as either a bid (buy) or an ask (sell). The matching engine
-          continuously scans the book and pairs orders where the buy price is
-          greater than or equal to the sell price — this is known as price-time
-          priority matching.
-        </p>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          When a match is found both the buyer and the seller have their wallets
-          updated and the trade is written to the transaction table. Orders that
-          have not yet been matched remain in the orderbook until they are
-          filled or cancelled. Because the orderbook is in-memory it resets if
-          the server restarts — only filled orders are persisted to the
-          database.
-        </p>
-      </section>
+      {/* Life of a Trade */}
 
-      <Separator />
+      <section>
+        <div className="max-w-6xl">
+          <Eyebrow>Request Flow</Eyebrow>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Virtual Balance
-        </h2>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Every account starts with $10,000 stored in the Wallet table. When you
-          buy, the trade amount is debited from your balance. When you sell, the
-          proceeds are credited back. Every movement is recorded in the
-          Transaction table giving you a full audit trail of every debit and
-          credit. Your available balance reflects funds not tied up in open
-          orders.
-        </p>
-      </section>
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Life of a trade.
+          </h2>
+        </div>
 
-      <Separator />
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Authentication</h2>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Authentication is handled by NextAuth with support for manual email
-          and password signup. Passwords are hashed with bcrypt before being
-          stored. Sessions are JWT-based and all protected routes are guarded by
-          middleware so unauthenticated users are redirected to the login page
-          automatically. Email verification is stubbed out and not active in the
-          current build.
-        </p>
-      </section>
-
-      <Separator />
-
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight">Tech Stack</h2>
-        <div className="space-y-2">
+        <div className="mt-12 divide-y divide-border">
           {[
-            { label: "Framework", value: "Next.js (App Router)" },
-            { label: "Auth", value: "NextAuth" },
-            { label: "Database", value: "PostgreSQL via Prisma" },
-            { label: "UI", value: "shadcn/ui + Tailwind CSS" },
-            { label: "Orderbook", value: "In-memory (Node.js)" },
-            { label: "Matching Engine", value: "Price-time priority" },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center gap-3 text-sm">
-              <span className="w-36 text-muted-foreground">{item.label}</span>
-              <Badge variant="outline">{item.value}</Badge>
+            [
+              "1.",
+              "Placement",
+              "The client submits an order through the trading interface to the REST API.",
+            ],
+            [
+              "2.",
+              "Validation",
+              "The API validates balances and forwards the request to Redis.",
+            ],
+            [
+              "3.",
+              "Matching",
+              "The engine processes queued orders sequentially using price-time priority.",
+            ],
+            [
+              "4.",
+              "Persistence",
+              "Trades and balances are committed to PostgreSQL and TimescaleDB.",
+            ],
+            [
+              "5.",
+              "Broadcast",
+              "Redis publishes events which are streamed to connected WebSocket clients.",
+            ],
+          ].map(([step, title, desc]) => (
+            <div
+              key={step}
+              className="grid gap-5 py-8 md:grid-cols-[100px_220px_1fr]">
+              <span className="font-mono text-[var(--brand-cyan)]">{step}</span>
+
+              <h3 className="font-medium text-foreground">{title}</h3>
+
+              <p className="leading-7 text-muted-foreground">{desc}</p>
             </div>
           ))}
         </div>
       </section>
-    </div>
+
+      <Separator className="my-20" />
+      {/* REST API */}
+
+      <section>
+        <div className="max-w-6xl">
+          <Eyebrow>REST API</Eyebrow>
+
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Public endpoints.
+          </h2>
+
+          <p className="mt-6 leading-8 text-muted-foreground">
+            The REST API acts as the primary entry point for clients. It handles
+            authentication, order placement, historical market data, and account
+            management before forwarding requests to the matching engine.
+          </p>
+        </div>
+
+        <div className="mt-14 rounded-2xl border border-border bg-card overflow-hidden">
+          {API_ENDPOINTS.map((endpoint, index) => (
+            <div
+              key={endpoint.path + endpoint.method}
+              className={`grid items-center gap-4 px-6 py-5 md:grid-cols-[100px_260px_1fr] ${
+                index !== API_ENDPOINTS.length - 1
+                  ? "border-b border-border"
+                  : ""
+              }`}>
+              <Badge
+                variant="outline"
+                className={`w-fit gap-1 rounded-full border-transparent px-2.5 py-1 font-mono text-xs font-medium tracking-wide ${
+                  METHOD_STYLES[endpoint.method] ??
+                  "bg-muted/40 text-muted-foreground"
+                }`}>
+                {endpoint.method}
+              </Badge>
+
+              <code className="text-sm text-foreground">{endpoint.path}</code>
+
+              <p className="text-sm text-muted-foreground">
+                {endpoint.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <Separator className="my-20" />
+
+      {/* Database */}
+
+      <section>
+        <div className="max-w-6xl">
+          <Eyebrow>Database</Eyebrow>
+
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Persistent storage.
+          </h2>
+
+          <p className="mt-6 leading-8 text-muted-foreground">
+            PostgreSQL stores user accounts, balances, orders, and transaction
+            history, while TimescaleDB extends PostgreSQL with time-series
+            capabilities for efficient trade history and candlestick generation.
+          </p>
+        </div>
+
+        <div className="mt-14 divide-y divide-border">
+          {[
+            {
+              title: "Users & Accounts",
+              description:
+                "Authentication and user account management powered by NextAuth.",
+            },
+            {
+              title: "Wallets",
+              description: "Stores balances and assets available for trading.",
+            },
+            {
+              title: "Transactions",
+              description:
+                "Maintains a complete audit trail for deposits, withdrawals, and executed trades.",
+            },
+            {
+              title: "Trades",
+              description:
+                "TimescaleDB hypertable containing every executed trade across all markets.",
+            },
+            {
+              title: "Klines",
+              description:
+                "Continuous aggregates generate 1m, 1h, 1d, and 1w OHLCV data for charting.",
+            },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="grid gap-5 py-8 md:grid-cols-[220px_1fr]">
+              <h3 className="font-medium text-foreground">{item.title}</h3>
+
+              <p className="leading-7 text-muted-foreground">
+                {item.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <Separator className="my-20" />
+
+      {/* Technology */}
+
+      <section>
+        <div className="max-w-6xl">
+          <Eyebrow>Technology Stack</Eyebrow>
+
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Built with modern tools.
+          </h2>
+
+          <p className="mt-6 leading-8 text-muted-foreground">
+            XCHG Lab combines a modern TypeScript stack with real-time
+            messaging, relational storage, and an in-memory matching engine to
+            simulate the architecture of a modern electronic exchange.
+          </p>
+        </div>
+
+        <div className="mt-14 divide-y divide-border">
+          {[
+            {
+              label: "Frontend",
+              value: "Next.js (App Router), React, Tailwind CSS, shadcn/ui",
+            },
+            {
+              label: "Backend",
+              value: "Node.js, Express",
+            },
+            {
+              label: "Database",
+              value: "PostgreSQL, TimescaleDB, Prisma ORM",
+            },
+            {
+              label: "Messaging",
+              value: "Redis Pub/Sub and Queues",
+            },
+            {
+              label: "Realtime",
+              value: "Native WebSockets",
+            },
+            {
+              label: "Language",
+              value: "TypeScript",
+            },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="grid gap-5 py-8 md:grid-cols-[220px_1fr]">
+              <h3 className="font-medium text-foreground">{item.label}</h3>
+
+              <p className="leading-7 text-muted-foreground">{item.value}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <Separator className="my-20" />
+
+      {/* Footer */}
+
+      <section className="max-w-6xl">
+        <h2 className="font-display text-2xl font-semibold tracking-tight">
+          Engineering through implementation.
+        </h2>
+
+        <p className="mt-6 leading-8 text-muted-foreground">
+          XCHG Lab rebuilds the core systems behind a modern electronic exchange
+          to better understand matching engines, market data distribution,
+          real-time communication, and distributed backend architecture.
+        </p>
+
+        <p className="mt-6 leading-8 text-muted-foreground">
+          Every component is designed and implemented independently to explore
+          the engineering trade-offs involved in building scalable exchange
+          infrastructure from first principles.
+        </p>
+      </section>
+    </main>
   );
 }

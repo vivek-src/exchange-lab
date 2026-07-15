@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
           assetsHeld: {
             TATA: 50, // Allotting 50 TATA shares
             RIL: 50, // Allotting 50 RIL shares
-            VIVEK: 50, // Allotting 50 $VIVEK shares
+            SOL: 50, // Allotting 50 $SOL shares
           },
         },
       });
@@ -58,17 +58,17 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Ledger Receipt: VIVEK
+      // Ledger Receipt: SOL
       await tx.transaction.create({
         data: {
           walletId: user.id,
           type: "CREDIT",
           category: "SIGNUP_BONUS",
-          description: "Welcome VIVEK coin airdrop",
+          description: "Welcome SOL coin airdrop",
           amount: 0,
           balanceAfter: 50000,
-          ticker: "VIVEK",
-          quantity: 50,
+          ticker: "SOL",
+          quantity: 20,
         },
       });
 
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
           amount: 0,
           balanceAfter: 50000,
           ticker: "TATA",
-          quantity: 50,
+          quantity: 20,
         },
       });
 
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
           amount: 0,
           balanceAfter: 50000,
           ticker: "RIL",
-          quantity: 50,
+          quantity: 20,
         },
       });
 

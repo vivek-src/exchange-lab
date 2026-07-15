@@ -18,7 +18,7 @@ type ProfileMenuProps = {
 };
 
 const Avatar = ({ name }: { name: string }) => (
-  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-neutral-700 bg-muted text-sm font-semibold text-white">
+  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-[var(--brand-cyan)]/10 text-sm font-semibold text-[var(--brand-cyan)]">
     {name?.charAt(0).toUpperCase()}
   </div>
 );
@@ -49,9 +49,14 @@ const ProfileMenu = ({ name, email }: ProfileMenuProps) => {
 
         <DropdownMenuSeparator />
 
+        {/* Assets & Trading Group — ordered by how often you'd check
+            each one: your holdings first, then balance, then open
+            orders, with Markets last since it's navigation/discovery
+            rather than "my account" data. Markets/Portfolio are
+            md:hidden here since desktop already has them in the main nav. */}
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href="/user">Profile</Link>
+          <DropdownMenuItem asChild className="md:hidden">
+            <Link href="/user/portfolio">Portfolio</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/user/wallet">Wallet</Link>
@@ -59,15 +64,31 @@ const ProfileMenu = ({ name, email }: ProfileMenuProps) => {
           <DropdownMenuItem asChild>
             <Link href="/user/orders">Orders</Link>
           </DropdownMenuItem>
+          <DropdownMenuItem asChild className="md:hidden">
+            <Link href="/markets">Markets</Link>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+
+        {/* Account & Resources Group */}
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href="/user">Profile</Link>
+          </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/docs">Docs</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={handleLogout}
-            className="text-red-500 focus:text-red-500 ">
-            Log Out
-          </DropdownMenuItem>
         </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+
+        {/* Destructive Actions Group */}
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="text-red-500 focus:text-red-500">
+          Log Out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

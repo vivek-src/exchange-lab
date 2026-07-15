@@ -1,7 +1,8 @@
 import { WebSocket } from "ws";
-import { randomUUID } from "crypto";
+import { Snowflake } from "@exchange-lab/engine";
 import { User } from "./user.js";
 import { SubscriptionManager } from "./subscriptionManager.js";
+const snowflake = new Snowflake(1);
 
 export class UserManager {
   private static instance: UserManager;
@@ -17,7 +18,7 @@ export class UserManager {
   }
 
   public addUser(ws: WebSocket) {
-    const id = randomUUID();
+    const id = snowflake.generate().toString();
     const user = new User(id, ws);
     this.users.set(id, user);
     this.registerOnClose(ws, id);

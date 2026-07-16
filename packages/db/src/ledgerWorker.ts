@@ -27,10 +27,12 @@ async function main() {
   await pgClient.connect();
   console.log("Connected to PostgreSQL via pg");
 
-  const redisClient = createClient();
+  const redisClient = createClient({
+    url: process.env.REDIS_URL || "redis://redis:6379",
+  });
+
   await redisClient.connect();
   console.log("Connected to Redis");
-
   while (true) {
     try {
       const response = await redisClient.brPop("db_processor", 0);

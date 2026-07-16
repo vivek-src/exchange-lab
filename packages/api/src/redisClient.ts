@@ -4,16 +4,24 @@ import type { EngineResponse, EngineRequest } from "@exchange-lab/shared";
 import { Snowflake } from "@exchange-lab/engine";
 const snowflake = new Snowflake(1);
 
+const REDIS_URL = process.env.REDIS_URL ?? "redis://redis:6379";
+
 export class EngineClient {
   private client: RedisClientType;
   private publisher: RedisClientType;
   private static instance: EngineClient;
 
   private constructor() {
-    this.client = createClient();
-    this.client.connect();
-    this.publisher = createClient();
-    this.publisher.connect();
+    this.client = createClient({
+      url: REDIS_URL,
+    });
+
+    this.publisher = createClient({
+      url: REDIS_URL,
+    });
+
+    this.client.on("error", console.error);
+    this.publisher.on("error", console.error);
   }
   public static getInstance() {
     if (!this.instance) {

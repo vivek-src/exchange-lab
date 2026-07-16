@@ -9,6 +9,7 @@
     ".": "./src/client.ts"
   },
   "scripts": {
+    "build": "tsc",
     "test": "node test.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",

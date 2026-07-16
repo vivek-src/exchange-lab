@@ -27,4 +27,4 @@ COPY --from=deps /app/packages/node_modules /app/packages/node_modules
 COPY --from=builder /app/packages/shared /app/packages/shared
 COPY --from=builder /app/packages/db /app/packages/db
 
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/workers/ledgerWorker.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/ledgerWorker.js"]

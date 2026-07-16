@@ -375,11 +375,12 @@ export default function LandingPage() {
           {/* Left Column: Text & CTAs */}
           <div className="max-w-2xl lg:max-w-none">
             <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl xl:text-6xl">
-              Practice trading on real markets.
+              Experience the market - not the risk.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-zinc-400">
-              Trade a live, simulated order book with a ₹50,000 virtual balance.
-              Real prices, real execution, zero financial risk.
+              Learn how markets work through realistic trading simulations. Make
+              mistakes, experiment with strategies, and improve—without risking
+              your savings.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">

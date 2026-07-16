@@ -3,10 +3,14 @@ WORKDIR /app
 COPY packages/package*.json ./packages/
 COPY packages ./packages
 WORKDIR /app/packages
+
+ARG RESEND_API_KEY
+ENV RESEND_API_KEY=$RESEND_API_KEY
+
 RUN npm ci
 RUN npm run db:generate --workspace=db || true
 RUN npm run build --workspace=shared || true
-RUN npm run build --workspace=web || true
+RUN npm run build --workspace=web 
 
 FROM node:22-alpine AS deps
 WORKDIR /app

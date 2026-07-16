@@ -149,6 +149,9 @@ services:
     build:
       context: .
       dockerfile: packages/web/Dockerfile
+      args:
+        RESEND_API_KEY: ${RESEND_API_KEY}
+
     container_name: xchg-web
     env_file:
       - .env

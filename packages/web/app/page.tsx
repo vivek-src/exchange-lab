@@ -379,7 +379,7 @@ export default function LandingPage() {
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-zinc-400">
               Learn how markets work through realistic trading simulations. Make
-              mistakes, experiment with strategies, and improve—without risking
+              mistakes, experiment with strategies, and improve without risking
               your savings.
             </p>
 

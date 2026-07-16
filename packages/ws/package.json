@@ -8,6 +8,9 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "ws": "^8.21.0"
   },

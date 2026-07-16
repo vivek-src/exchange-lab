@@ -1,6 +1,9 @@
 import { createClient } from "redis";
 import type { RedisClientType } from "redis";
 import { UserManager } from "./userManager.js";
+import { config } from "dotenv";
+
+config({ quiet: true });
 
 const REDIS_URL = process.env.REDIS_URL ?? "redis://redis:6379";
 

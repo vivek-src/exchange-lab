@@ -1,9 +1,11 @@
+import { config } from "dotenv";
 import { createClient } from "redis";
 import type { RedisClientType } from "redis";
 import type { EngineResponse, EngineRequest } from "@exchange-lab/shared";
 import { Snowflake } from "@exchange-lab/engine";
 const snowflake = new Snowflake(1);
 
+config({ quiet: true });
 const REDIS_URL = process.env.REDIS_URL ?? "redis://redis:6379";
 
 export class EngineClient {

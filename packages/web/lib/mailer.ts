@@ -9,8 +9,8 @@ export enum EmailType {
 }
 
 const SENDER: Record<EmailType, string> = {
-  [EmailType.VERIFY]: "XCHG LAB <verifyemail@xchg.viveksahu.com>",
-  [EmailType.RESET]: "XCHG LAB Security <resetpass@xchg.viveksahu.com>",
+  [EmailType.VERIFY]: "XCHG Lab <verify@xchg.viveksahu.com>",
+  [EmailType.RESET]: "XCHG Lab <reset@xchg.viveksahu.com>",
 };
 
 const ACTION_PATH: Record<EmailType, string> = {

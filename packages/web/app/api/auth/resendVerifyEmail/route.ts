@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       await sendEmail({
         email,
         emailType: EmailType.VERIFY,
-        userId: newUser.id,
+        userId: user.id,
       });
     } catch (error) {
       console.log("Error sending verification mail", error);

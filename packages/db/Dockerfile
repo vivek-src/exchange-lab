@@ -21,6 +21,7 @@ WORKDIR /app/packages/db
 ENV NODE_ENV=production
 
 COPY --from=deps /app/packages/node_modules /app/packages/node_modules
+COPY --from=builder /app/packages/shared /app/packages/shared
 COPY --from=builder /app/packages/db /app/packages/db
 
 CMD ["node", "dist/workers/ledgerWorker.js"]

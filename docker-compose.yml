@@ -1,68 +1,55 @@
-version: "3.9"
-
 services:
   postgres:
     image: timescale/timescaledb:latest-pg17
     container_name: xchg-postgres
-
     command:
       - postgres
       - -c
       - shared_preload_libraries=timescaledb
-
     env_file:
       - .env
-
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
+      - pg_data:/var/lib/postgresql/data
     restart: unless-stopped
-
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5m
+      interval: 30s
       timeout: 5s
       retries: 5
-
+      start_period: 10s
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-
     networks:
       - xchg
 
   redis:
     image: redis:8-alpine
     container_name: xchg-redis
-
     command:
       - redis-server
       - --save
       - ""
       - --appendonly
       - "no"
-
     restart: unless-stopped
-
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5m
+      interval: 30s
       timeout: 5s
       retries: 5
-
+      start_period: 10s
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-
     networks:
       - xchg
 
@@ -70,32 +57,24 @@ services:
     build:
       context: .
       dockerfile: packages/api/Dockerfile
-
     container_name: xchg-api
-
     env_file:
       - .env
-
     environment:
       PORT: 3001
-
     ports:
       - "127.0.0.1:3001:3001"
-
     restart: unless-stopped
-
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-
     networks:
       - xchg
 
@@ -103,26 +82,20 @@ services:
     build:
       context: .
       dockerfile: packages/engine/Dockerfile
-
     container_name: xchg-engine
-
     env_file:
       - .env
-
     restart: unless-stopped
-
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-
     networks:
       - xchg
 
@@ -130,26 +103,20 @@ services:
     build:
       context: .
       dockerfile: packages/db/Dockerfile
-
     container_name: xchg-ledger
-
     env_file:
       - .env
-
     restart: unless-stopped
-
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-
     networks:
       - xchg
 
@@ -157,32 +124,24 @@ services:
     build:
       context: .
       dockerfile: packages/ws/Dockerfile
-
     container_name: xchg-ws
-
     env_file:
       - .env
-
     environment:
       PORT: 3002
-
     ports:
       - "127.0.0.1:3002:3002"
-
     restart: unless-stopped
-
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-
     networks:
       - xchg
 
@@ -190,30 +149,22 @@ services:
     build:
       context: .
       dockerfile: packages/web/Dockerfile
-
     container_name: xchg-web
-
     env_file:
       - .env
-
     environment:
       PORT: 3000
-
     ports:
       - "127.0.0.1:3000:3000"
-
     restart: unless-stopped
-
     depends_on:
       postgres:
         condition: service_healthy
-
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-
     networks:
       - xchg
 

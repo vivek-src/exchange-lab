@@ -6,6 +6,7 @@ WORKDIR /app/packages
 RUN npm ci
 RUN npm run db:generate --workspace=db || true
 RUN npm run build --workspace=shared || true
+RUN npm run build --workspace=engine || true
 RUN npm run build --workspace=api || true
 
 FROM node:22-alpine AS deps
@@ -23,6 +24,7 @@ ENV NODE_ENV=production
 COPY --from=deps /app/packages/node_modules /app/packages/node_modules
 COPY --from=builder /app/packages/db /app/packages/db
 COPY --from=builder /app/packages/shared /app/packages/shared
+COPY --from=builder /app/packages/engine /app/packages/engine
 COPY --from=builder /app/packages/api /app/packages/api
 
 CMD ["node", "dist/index.js"]

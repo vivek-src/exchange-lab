@@ -23,7 +23,6 @@ ENV NODE_ENV=production
 COPY --from=deps /app/packages/node_modules /app/packages/node_modules
 COPY --from=builder /app/packages/db /app/packages/db
 COPY --from=builder /app/packages/shared /app/packages/shared
-COPY --from=builder /app/packages/api /app/packages/api
 COPY --from=builder /app/packages/engine /app/packages/engine
 
 CMD ["node", "dist/index.js"]

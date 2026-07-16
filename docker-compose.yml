@@ -153,6 +153,10 @@ services:
       dockerfile: packages/web/Dockerfile
       args:
         RESEND_API_KEY: ${RESEND_API_KEY}
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL}
+        NEXT_PUBLIC_REST_API_URL: ${NEXT_PUBLIC_REST_API_URL}
+        NEXT_PUBLIC_WS_BASE_URL: ${NEXT_PUBLIC_WS_BASE_URL}
+        NEXT_PUBLIC_BACKEND: ${NEXT_PUBLIC_BACKEND}
 
     container_name: xchg-web
     env_file:

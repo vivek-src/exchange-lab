@@ -222,4 +222,4 @@ networks:
     driver: bridge
 
 volumes:
-  xchg_data:
+  pg_data:

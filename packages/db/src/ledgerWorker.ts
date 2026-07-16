@@ -1,7 +1,8 @@
 import { Client } from "pg";
 import { createClient } from "redis";
-import "dotenv/config";
+import { config } from "dotenv";
 
+config({ quiet: true });
 // Ensure your type definition matches what your matching engine sends
 interface DbMessage {
   type: "TRADE_ADDED";

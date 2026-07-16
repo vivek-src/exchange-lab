@@ -10,6 +10,7 @@ export class EngineClient {
   private client: RedisClientType;
   private publisher: RedisClientType;
   private static instance: EngineClient;
+  private connected = false;
 
   private constructor() {
     this.client = createClient({
@@ -28,6 +29,15 @@ export class EngineClient {
       this.instance = new EngineClient();
     }
     return this.instance;
+  }
+  public async connect() {
+    if (this.connected) return;
+
+    await this.client.connect();
+    await this.publisher.connect();
+
+    this.connected = true;
+    console.log("Connected to Redis");
   }
   public sendRequest(message: EngineRequest) {
     return new Promise<EngineResponse>((resolve, reject) => {

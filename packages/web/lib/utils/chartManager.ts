@@ -101,7 +101,7 @@ export class ChartManager {
         timeVisible: true,
         secondsVisible: false,
 
-        tickMarkFormatter: (time: UTCTimestamp, tickMarkType, locale) => {
+        tickMarkFormatter: (time: UTCTimestamp, tickMarkType: any, locale: any) => {
           return new Date(time * 1000).toLocaleString(undefined, {
             hour: "2-digit",
             minute: "2-digit",

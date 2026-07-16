@@ -156,7 +156,7 @@ function BalancesTab({
   }
 
   const holdings = Object.entries(wallet?.holdings ?? {});
-  const hasAnything = (wallet?.balance ?? 0) > 0 || holdings.length > 0;
+  const hasAnything = Number(wallet?.balance ?? 0) > 0 || holdings.length > 0;
 
   if (!hasAnything) {
     return (

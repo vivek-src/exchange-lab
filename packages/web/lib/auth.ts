@@ -31,7 +31,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        if (!credentials.email || !credentials.password) {
+        if (!credentials?.email || !credentials?.password) {
           throw new Error("Missing Email or Password");
         }
         try {
@@ -43,6 +43,9 @@ export const authOptions: NextAuthOptions = {
             throw new Error("User not found.");
           }
           //if password is wrong
+          if (!user.password) {
+            throw new Error("Invalid credentials");
+          }
           const validPass = await bcrypt.compare(
             credentials.password,
             user.password,
@@ -62,8 +65,8 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     GitHubProvider({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
+      clientId: process.env.GITHUB_ID || "",
+      clientSecret: process.env.GITHUB_SECRET || "",
     }),
   ],
   callbacks: {

@@ -43,14 +43,14 @@ const FEATURES = [
   },
   {
     title: "Nothing at stake",
-    body: "Break a strategy, blow the account, start over. It's a $50,000 balance that was never real to begin with.",
+    body: "Break a strategy, blow the account, start over. It's a ₹50,000 balance that was never real to begin with.",
   },
 ];
 
 const NEW_STEPS = [
   {
     title: "Create an Account",
-    body: "Sign up in seconds and instantly receive your $50,000 virtual balance.",
+    body: "Sign up in seconds and instantly receive your ₹50,000 virtual balance.",
     icon: UserPlus,
   },
   {
@@ -378,7 +378,7 @@ export default function LandingPage() {
               Practice trading on real markets.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-zinc-400">
-              Trade a live, simulated order book with a $50,000 virtual balance.
+              Trade a live, simulated order book with a ₹50,000 virtual balance.
               Real prices, real execution, zero financial risk.
             </p>
 
@@ -401,7 +401,7 @@ export default function LandingPage() {
             <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 font-mono text-xs text-zinc-500">
               <span>
                 <strong className="font-mono font-medium text-zinc-200">
-                  $50,000
+                  ₹50,000
                 </strong>{" "}
                 starting balance
               </span>
@@ -589,7 +589,7 @@ export default function LandingPage() {
       <section className="border-t border-[#1E2126] py-24">
         <div className="mx-auto max-w-xl px-6 text-center">
           <h2 className="font-display text-2xl font-semibold leading-tight text-white sm:text-3xl">
-            $50,000 you can actually afford to lose.
+            ₹50,000 you can actually afford to lose.
           </h2>
           <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-zinc-500">
             Free account, live prices, zero risk. Takes a minute.

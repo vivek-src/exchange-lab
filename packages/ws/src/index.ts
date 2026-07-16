@@ -1,7 +1,7 @@
 import { WebSocketServer } from "ws";
 import { UserManager } from "./userManager.js";
 
-const port = 3001;
+const port = 3002;
 const wss = new WebSocketServer({ port });
 console.log(`Web Socker Server Live on ${port}`);
 

@@ -103,6 +103,8 @@ services:
     build:
       context: .
       dockerfile: packages/db/Dockerfile
+      args:
+        DATABASE_URL: ${DATABASE_URL}
     container_name: xchg-ledger
     env_file:
       - .env

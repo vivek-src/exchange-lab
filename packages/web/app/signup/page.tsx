@@ -197,13 +197,13 @@ export default function SignUp() {
           <div className="text-center text-xs text-muted-foreground">
             By clicking continue, you agree to our{" "}
             <Link
-              href="/terms"
+              href="/legal#terms"
               className="underline underline-offset-4 hover:text-primary">
               Terms of Service
             </Link>{" "}
             and{" "}
             <Link
-              href="/privacy"
+              href="/legal#privacy"
               className="underline underline-offset-4 hover:text-primary">
               Privacy Policy
             </Link>

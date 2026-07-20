@@ -292,8 +292,17 @@ export class Engine {
 
       case "ADD_USER":
         try {
-          const { userId } = message.data;
-          this.loadWalletIntoMemory(userId);
+          const { userId, wallet } = message.data;
+
+          if (wallet) {
+            this.loadWalletIntoMemory(wallet);
+          } else {
+            this.loadWalletIntoMemory({
+              userId,
+              balance: 50000,
+              assetsHeld: "{}",
+            });
+          }
           console.log(`Engine loaded balances for new user: ${userId}`);
 
           RedisManager.getInstance().sendToApi(clientId, {

@@ -100,9 +100,11 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      await pingApiNewUser(user.id);
       return user;
     });
+
+    // Notify the engine for the new user
+    await pingApiNewUser(newUser.id);
 
     //Send verification Email
     try {

@@ -32,8 +32,7 @@
 ---
 
 <p align="center">
-  <img src="./image/ui.png" width="49%" alt="Exchange-Lab trading dashboard - markets overview and live pricing" />
-  <img src="./image/terminal.png" width="49%" alt="Exchange-Lab trade terminal - order entry, order book, and trade tape" />
+  <img src="./image/banner.svg" alt="Exchange-Lab Promo Image" >
 </p>
 
 <!--
@@ -79,7 +78,12 @@ The hosted demo gives every visitor a virtual ₹50,000 balance, no signup requi
 
 Live markets: **RIL/INR** ([trade now](https://xchg.viveksahu.com/trade/RIL_INR)) · **TATA/INR** · **SOL/INR**
 
-Each terminal includes a live price ticker (24H high/low, volume), candlestick charts across four timeframes, limit and market order types, a live order book, a trade tape, and portfolio/wallet tracking once logged in.
+## Each terminal includes a live price ticker (24H high/low, volume), candlestick charts across four timeframes, limit and market order types, a live order book, a trade tape, and portfolio/wallet tracking once logged in.
+
+<p align="center">
+  <img src="./image/ui.png" width="49%" alt="Exchange-Lab trading dashboard - markets overview and live pricing" />
+  <img src="./image/terminal.png" width="49%" alt="Exchange-Lab trade terminal - order entry, order book, and trade tape" />
+</p>
 
 ## Why I Built This
 
@@ -118,7 +122,7 @@ The focus areas were:
 
 ## Architecture
 
-![System Architecture Diagram](./image/architecture.png)
+![System Architecture Diagram](./image/architecture.svg)
 
 **Order flow, step by step:**
 
@@ -259,7 +263,3 @@ Contributions are welcome:
 4. Push and open a pull request
 
 Licensed under the **MIT License** - see [`LICENSE`](./LICENSE).
-
-<p align="center">
-  <img src="./image/banner.png" alt="Exchange-Lab Promo Image" width="90%">
-</p>

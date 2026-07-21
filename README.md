@@ -261,5 +261,5 @@ Contributions are welcome:
 Licensed under the **MIT License** - see [`LICENSE`](./LICENSE).
 
 <p align="center">
-  <img src="./image/banner.svg" alt="Exchange-Lab Promo Image" width="90%">
+  <img src="./image/banner.svg" alt="Exchange-Lab Promo Image" >
 </p>

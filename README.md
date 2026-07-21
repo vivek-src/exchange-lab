@@ -32,6 +32,7 @@
 ---
 
 <p align="center">
+  <img src="./image/banner.svg" alt="Exchange-Lab Promo Image" >
   <img src="./image/ui.png" width="49%" alt="Exchange-Lab trading dashboard - markets overview and live pricing" />
   <img src="./image/terminal.png" width="49%" alt="Exchange-Lab trade terminal - order entry, order book, and trade tape" />
 </p>
@@ -259,7 +260,3 @@ Contributions are welcome:
 4. Push and open a pull request
 
 Licensed under the **MIT License** - see [`LICENSE`](./LICENSE).
-
-<p align="center">
-  <img src="./image/banner.svg" alt="Exchange-Lab Promo Image" >
-</p>

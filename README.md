@@ -118,7 +118,7 @@ The focus areas were:
 
 ## Architecture
 
-![System Architecture Diagram](./image/architecture.png)
+![System Architecture Diagram](./image/architecture.svg)
 
 **Order flow, step by step:**
 
@@ -261,5 +261,5 @@ Contributions are welcome:
 Licensed under the **MIT License** - see [`LICENSE`](./LICENSE).
 
 <p align="center">
-  <img src="./image/banner.png" alt="Exchange-Lab Promo Image" width="90%">
+  <img src="./image/banner.svg" alt="Exchange-Lab Promo Image" width="90%">
 </p>

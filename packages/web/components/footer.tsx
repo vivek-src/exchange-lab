@@ -25,9 +25,6 @@ export default function Footer() {
           <div className="lg:place-items-center">
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/">Home</Link>
-              </li>
-              <li>
                 <Link href="/about">About</Link>
               </li>
               <li>
@@ -35,6 +32,9 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/about#contact">Contact</Link>
+              </li>
+              <li>
+                <Link href="/legal">Terms & Privacy</Link>
               </li>
             </ul>
           </div>

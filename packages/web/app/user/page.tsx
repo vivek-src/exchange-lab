@@ -192,7 +192,7 @@ export default async function UserProfilePage() {
               {user.emailVerified ? (
                 <CheckCircle2 className="size-5 shrink-0 text-emerald-500" />
               ) : (
-                <ResendVerificationTrigger email={user.email} />
+                <ResendVerificationTrigger email={user.email ?? undefined} />
               )}
             </div>
 
@@ -211,7 +211,7 @@ export default async function UserProfilePage() {
                   </div>
                 </div>
                 <ResetPassTrigger
-                  email=""
+                  email={user.email ?? undefined}
                   name="Send Reset Link"
                   variant="button"
                 />

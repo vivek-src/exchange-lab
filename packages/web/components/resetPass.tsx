@@ -73,7 +73,7 @@ export function ResetPassDialog({
   );
 }
 
-interface resetPassTriggerProps {
+interface ResetPassTriggerProps {
   name?: string;
   email?: string;
   variant?: "button" | "link";

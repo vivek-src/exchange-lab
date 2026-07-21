@@ -66,10 +66,11 @@ export async function getDepth(market: string): Promise<DepthUpdateMessage> {
   return data;
 }
 
-export async function getTrades(market: string): Promise<Trade[]> {
+export async function getTrades(market: string, limit?: number): Promise<Trade[]> {
   const { data } = await api.get<Trade[]>("/trades", {
     params: {
       market,
+      limit,
     },
   });
 

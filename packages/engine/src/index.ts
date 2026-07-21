@@ -1,4 +1,4 @@
-import { createClient } from "redis";
+import { RedisManager } from "./redisClient.js";
 import { Engine } from "./trade/Engine.js";
 
 async function main() {
@@ -7,12 +7,11 @@ async function main() {
     await engine.setBaseBalances();
   }
 
-  const redisClient = createClient();
-  await redisClient.connect();
+  const redisManager = RedisManager.getInstance();
   console.log("Connected to redis");
 
   while (true) {
-    const response = await redisClient.brPop("messages", 0);
+    const response = await redisManager.blockingPop("messages", 0);
     if (response) {
       engine.process(JSON.parse(response.element));
     }

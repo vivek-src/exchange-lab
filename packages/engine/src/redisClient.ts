@@ -1,4 +1,3 @@
-import { ORDER_UPDATE, TRADE_ADDED } from "@exchange-lab/shared";
 import type { EngineResponse } from "@exchange-lab/shared";
 import { createClient } from "redis";
 import type { RedisClientType } from "redis";
@@ -9,9 +8,16 @@ export class RedisManager {
   private client: RedisClientType;
   private static instance: RedisManager;
 
-  constructor() {
-    this.client = createClient();
-    this.client.connect();
+  private constructor() {
+    this.client = createClient({
+      url: process.env.REDIS_URL ?? "redis://redis:6379",
+    });
+
+    this.client.on("error", (err) => {
+      console.error("Redis error:", err);
+    });
+
+    this.client.connect().catch(console.error);
   }
 
   public static getInstance() {
@@ -31,5 +37,9 @@ export class RedisManager {
 
   public sendToApi(clientId: string, message: EngineResponse) {
     this.client.publish(clientId, JSON.stringify(message));
+  }
+
+  public async blockingPop(key: string, timeout = 0) {
+    return this.client.brPop(key, timeout);
   }
 }

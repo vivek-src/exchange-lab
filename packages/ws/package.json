@@ -12,6 +12,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "ws": "^8.21.0"
   },
   "devDependencies": {

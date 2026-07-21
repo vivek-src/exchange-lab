@@ -1,0 +1,16 @@
+.git
+.gitignore
+node_modules
+packages/**/node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.next
+packages/**/.next
+dist
+packages/**/dist
+.env
+.env.*
+README.md
+docker-compose.yml
+nginx.conf

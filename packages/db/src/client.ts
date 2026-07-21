@@ -2,6 +2,8 @@ import { config } from "dotenv";
 import { join } from "path";
 import { PrismaClient } from "./generated/index.js";
 import { PrismaPg } from "@prisma/adapter-pg";
+// quite env injection
+config({ quiet: true });
 
 // Load .env from root (apps/)
 config({ path: join(process.cwd(), ".env") });

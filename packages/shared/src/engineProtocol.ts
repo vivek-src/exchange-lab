@@ -59,6 +59,11 @@ export type EngineRequest =
       type: typeof ADD_USER;
       data: {
         userId: string;
+        wallet: {
+          userId: string;
+          balance: any;
+          assetsHeld: any;
+        };
       };
     };
 

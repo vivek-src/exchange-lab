@@ -188,7 +188,7 @@ docker compose up -d
 
 ## Architecture Overview
 
-![System Architecture Diagram](./images/architecture.png)
+![System Architecture Diagram](./image/architecture.png)
 
 The platform operates on a robust event-driven architecture designed to mimic real-world financial exchanges.
 

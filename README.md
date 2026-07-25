@@ -3,9 +3,7 @@
   <img src="./image/logo.svg" alt="Exchange-Lab Logo" width="220">
 
   <p>
-    A production-inspired cryptocurrency/equity exchange simulator - a custom in-memory matching engine,
-    event-driven settlement, live WebSocket market data, and TradingView-style charting -
-    built to explore low-latency system design and exchange infrastructure.
+A production-inspired centralized exchange simulator - custodial order matching, an in-memory matching engine, event-driven settlement, live WebSocket market data, and TradingView-style charting, built to explore low-latency system design and exchange infrastructure.
   </p>
 
   <p>
@@ -87,7 +85,7 @@ Live markets: **RIL/INR** ([trade now](https://xchg.viveksahu.com/trade/RIL_INR)
 
 ## Why I Built This
 
-I wanted to understand how a real exchange keeps order matching fast while keeping account balances consistent under concurrent load - that intersection of low-latency systems and correctness is genuinely hard to get right, and reading about it isn't the same as building it.
+I wanted to understand how a centralized exchange keeps order matching fast while keeping custodial account balances consistent under concurrent load. Unlike a DEX, there's no on-chain settlement or smart contract here — the platform itself holds user funds and matches orders server-side, the same model real exchanges like Binance or Coinbase run internally. That intersection of low-latency systems and correctness is genuinely hard to get right, and reading about it isn't the same as building it.
 
 The focus areas were:
 
@@ -99,7 +97,7 @@ The focus areas were:
 
 ## Features
 
-- **Matching engine** - in-memory, price-time priority order book with partial fill support.
+- **Matching engine** - in-memory, price-time priority order book with partial fill support, operating in a fully custodial (CEX-style) model.
 - **Event-driven core** - services communicate exclusively via Redis queue + Pub/Sub, no direct service-to-service calls.
 - **Live market data** - WebSocket streaming for order book depth, trade tape, and ticker updates.
 - **Async settlement** - a dedicated ledger worker persists trades under ACID transactions, off the matching engine's hot path.
@@ -148,6 +146,7 @@ The focus areas were:
 - **Snowflake IDs over UUIDs** - IDs need to be chronologically sortable without a timestamp column and generated without a database round-trip; a bit-shifted snowflake ID (timestamp + worker ID + sequence counter) gives both in one 64-bit `BigInt`, resolving in under a millisecond. ([`Snowflake.ts`](packages/engine/src/trade/Snowflake.ts))
 - **Row-level locking in the ledger worker** - concurrent trades touching the same wallet could otherwise race; `SELECT ... FOR UPDATE` inside an ACID transaction closes that gap. ([`ledgerWorker.ts`](packages/db/src/ledgerWorker.ts))
 - **Pub/Sub fan-out instead of a shared callback** - the WebSocket server and ledger worker both need to react to the same trade event, but neither needs to know the other exists; Pub/Sub lets them subscribe independently rather than chaining calls.
+- **Custodial balance integrity** - since this is a centralized exchange, the platform (not the user) holds and moves funds on every trade; any drift between the in-memory engine and the database becomes a real accounting problem, not just a UI bug.
 - **TimescaleDB over plain PostgreSQL** - OHLCV/kline queries over large tick-data volumes are dramatically cheaper with continuous aggregates than computing candles on read from a raw trades table.
 
 ## Engineering Challenges
@@ -262,4 +261,4 @@ Contributions are welcome:
 3. Commit your changes: `git commit -m 'Add some amazing feature'`
 4. Push and open a pull request
 
-Licensed under the **MIT License** - see [`LICENSE`](./LICENSE).
+Licensed under the **MIT License**

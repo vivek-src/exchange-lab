@@ -251,7 +251,7 @@ throughput, latency, and scaling behavior as order-book depth increases.
 - **Bottleneck Identified:** Full-book re-sorting during order insertion causes
   throughput to degrade as the resting book grows.
 
-📈 [**Read the Full Benchmark Report**](./benchmark.md)
+[**Read the Full Benchmark Report**](./RESULTS.md)
 
 ## Contributing & License
 

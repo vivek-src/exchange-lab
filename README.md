@@ -235,22 +235,23 @@ Nginx handles routing to the correct internal service, TLS termination, and upgr
 
 ## Performance
 
-No formal load testing has been run yet - treat the following as architectural reasoning, not benchmarks:
+The in-memory matching engine has been benchmarked in isolation to evaluate
+throughput, latency, and scaling behavior as order-book depth increases.
 
-- **Order-to-publish latency:** likely low single-digit milliseconds under light load, dominated by Redis round-trips rather than the in-memory matching step itself.
-- **Throughput:** a single engine process could plausibly handle hundreds to low thousands of orders/sec before the Redis queue or the single-threaded matching loop becomes the bottleneck.
-- **Concurrent WebSocket clients:** likely comfortable into the low thousands on a single small VM before `ws` needs to be scaled horizontally.
+![Matching engine benchmark — throughput degradation with increasing book depth](./image/throughput-decay.png)
 
-Real benchmarks (order processing latency, Redis publish latency, WebSocket round-trip time, memory footprint under load) are the top item on the roadmap below - until then, these numbers shouldn't be quoted as measured facts.
+|    Orders |            Throughput | p50 Latency | p99 Latency |
+| --------: | --------------------: | ----------: | ----------: |
+|     1,000 |  **1.10M orders/sec** |      0.6 µs |      1.7 µs |
+|    10,000 | **253.7K orders/sec** |      3.6 µs |      9.7 µs |
+|   100,000 |  **28.2K orders/sec** |     35.1 µs |     77.5 µs |
+| 1,000,000 |  **2.06K orders/sec** |    441.9 µs |     1.77 ms |
 
-## Roadmap
+- **Peak Throughput:** 1.06M orders/sec at 1,000 orders
+- **Bottleneck Identified:** Full-book re-sorting during order insertion causes
+  throughput to degrade as the resting book grows.
 
-- [ ] Automated test coverage - unit tests for the matching engine, integration tests for the settlement flow
-- [ ] CI pipeline (build/lint/test on PRs)
-- [ ] Load testing to replace the estimates above with measured numbers
-- [ ] Additional order types (stop, IOC/FOK)
-- [ ] Multi-asset order book support beyond the current pairs
-- [ ] Historical backtesting mode
+📈 [**Read the Full Benchmark Report**](./benchmark.md)
 
 ## Contributing & License
 

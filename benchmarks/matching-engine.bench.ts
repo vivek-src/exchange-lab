@@ -50,10 +50,7 @@ const BENCHMARK_SIZES = cliMax
   ? ALL_SIZES.filter((s) => s <= Number(cliMax))
   : ALL_SIZES;
 
-const RESULTS_DIR = join(
-  import.meta.dirname ?? ".",
-  "../../benchmark-results/engine",
-);
+const RESULTS_DIR = join(import.meta.dirname ?? ".", "../benchmark-results");
 
 // ============================================================================
 // Deterministic RNG (same as invariant tests)
@@ -403,69 +400,7 @@ async function main() {
   if (!existsSync(RESULTS_DIR)) mkdirSync(RESULTS_DIR, { recursive: true });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 
-  const jsonPath = join(RESULTS_DIR, `engine-benchmark-${timestamp}.json`);
-  writeFileSync(
-    jsonPath,
-    JSON.stringify(
-      {
-        timestamp: new Date().toISOString(),
-        node_version: process.version,
-        platform: `${process.platform} ${process.arch}`,
-        time_budget_ms: TIME_BUDGET_MS,
-        results: allResults,
-      },
-      null,
-      2,
-    ),
-  );
-  console.log(`Results saved to: ${jsonPath}`);
-
-  const csvPath = join(RESULTS_DIR, `engine-benchmark-${timestamp}.csv`);
-  const csvHeader =
-    "orders,total_ms,orders_per_sec,matches_per_sec,match_count,final_book_size,avg_us,p50_us,p95_us,p99_us,max_us,memory_mb,decay_ratio\n";
-  const csvRows = Object.entries(allResults)
-    .map(([size, r]) =>
-      [
-        size,
-        r.totalTimeMs.toFixed(2),
-        r.ordersPerSec.toFixed(0),
-        r.matchesPerSec.toFixed(0),
-        r.matchCount,
-        r.finalBookSize,
-        r.avgLatencyUs.toFixed(2),
-        r.p50LatencyUs.toFixed(2),
-        r.p95LatencyUs.toFixed(2),
-        r.p99LatencyUs.toFixed(2),
-        r.maxLatencyUs.toFixed(2),
-        r.memoryMB.toFixed(2),
-        r.decayRatio.toFixed(3),
-      ].join(","),
-    )
-    .join("\n");
-  writeFileSync(csvPath, csvHeader + csvRows + "\n");
-  console.log(`CSV saved to: ${csvPath}`);
-
-  // Segment-level throughput CSV — this is the file that actually shows the
-  // O(n·m log m) degradation as a curve, per size.
-  const segCsvPath = join(
-    RESULTS_DIR,
-    `engine-benchmark-segments-${timestamp}.csv`,
-  );
-  const segHeader =
-    "orders,segment_index,orders_per_sec,avg_resting_book_size\n";
-  const segRows = Object.entries(allResults)
-    .flatMap(([size, r]) =>
-      r.segments.map(
-        (s) =>
-          `${size},${s.segmentIndex},${s.ordersPerSec.toFixed(0)},${s.avgRestingBookSize.toFixed(0)}`,
-      ),
-    )
-    .join("\n");
-  writeFileSync(segCsvPath, segHeader + segRows + "\n");
-  console.log(`Segment CSV saved to: ${segCsvPath}`);
-
-  // Markdown report — readable summary + a plain-ASCII decay sparkline per size,
-  // so you don't need to open a spreadsheet to see the degradation.
+  // Markdown report — readable summary + a plain-ASCII decay sparkline per size.
   const mdPath = join(RESULTS_DIR, `engine-benchmark-${timestamp}.md`);
   writeFileSync(mdPath, buildMarkdownReport(allResults, timestamp));
   console.log(`Markdown report saved to: ${mdPath}`);
